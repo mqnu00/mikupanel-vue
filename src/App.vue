@@ -12,7 +12,7 @@ import SysInfo from './components/SysInfo.vue'
 @Options({
   components: {
     HelloWorld,
-    SysInfo
+    SysInfo,
   },
 })
 export default class App extends Vue {}
