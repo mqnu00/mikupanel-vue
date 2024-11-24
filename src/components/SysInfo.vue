@@ -1,19 +1,32 @@
 <template>
     <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
-    <div id="main" style="width: 600px; height: 400px"></div>
-    <div id="main1" style="width: 600px; height: 400px"></div>
+    <div class="chart-with-button">
+        <div id="cpuChart" class="chart-container">
+    </div>
+    </div>
+        <!-- 切换图表的按钮组 -->
+        <el-radio-group v-model="radio1" size="large">
+            <el-radio-button label="New York" value="New York" />
+            <el-radio-button label="Washington" value="Washington" />
+            <el-radio-button label="Los Angeles" value="Los Angeles" />
+            <el-radio-button label="Chicago" value="Chicago" />
+        </el-radio-group>
 </template>
 
 <script lang="ts">
 
 //按需引入
-import { defineComponent, onMounted, onUnmounted } from "vue";
+import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 
 //引入创建的echarts.ts文件
 import echarts from "../utils/echarts";
 import { getCpuUsage } from "../client/sysInfo";
 
 export default defineComponent({
+    
+    methods: {
+    },
+
     setup() {
 
         let socket: WebSocket | null = null;
@@ -28,46 +41,24 @@ export default defineComponent({
             /**
               !是非空断言运算符，表示确保找到了匹配的元素，如果找不到元素或其值为
           null 或 undefined，会引发错误。
-              document.getElementById("main") 是调用 getElementById 方法，
-          传入参数 “main”，用于获取具有 id 为 “main” 的元素。
+              document.getElementById("cpuChart") 是调用 getElementById 方法，
+          传入参数 “cpuChart”，用于获取具有 id 为 “cpuChart” 的元素。
               echarts.init() 方法用于初始化一个 echarts 图表实例。
           */
 
             // 基于准备好的dom，初始化echarts实例
-            var chartDom = document.getElementById("main")!;
+            var chartDom = document.getElementById("cpuChart")!;
             var myChart = echarts.init(chartDom);
-
-            var chartDom1 = document.getElementById("main1")!;
-            var myChart1 = echarts.init(chartDom1);
+            myChart.clear()
 
             //还可以这样一起写
-            // var myChart = echarts.init(document.getElementById("main")!);
+            // var myChart = echarts.init(document.getElementById("cpuChart")!);
 
             // 指定图表的配置项和数据
+
             var option = {
                 title: {
-                    text: "第一个 ECharts 实例",
-                },
-                tooltip: {},
-                legend: {
-                    data: ["销量"],
-                },
-                xAxis: {
-                    data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"],
-                },
-                yAxis: {},
-                series: [
-                    {
-                        name: "销量",
-                        type: "bar",
-                        data: [5, 20, 36, 10, 10, 20],
-                    },
-                ],
-            };
-
-            var option1 = {
-                title: {
-                    text: "第二个 ECharts 实例",
+                    text: "CPU使用率",
                 },
                 tooltip: {
                     trigger: "axis",
@@ -95,26 +86,29 @@ export default defineComponent({
                 xAxis: {
                     type: "category",
                     boundaryGap: false,
-                    data: cputime
+                    data: cputime,
+                    name: '/s',
                 },
                 yAxis: {
                     max: 100,
                     min: 0,
                     interval: 20,
                     type: "value",
-                },
-                series: [
-                    {
-                        name: "Email",
-                        type: "line",
-                        stack: "Total",
-                        areaStyle: {},
-                        emphasis: {
-                            focus: "series",
-                        },
-                        data: cpuinfo
+                    axisLabel: {
+                        formatter: '{value}%'
                     }
-                ],
+                },
+                series: {
+                    name: "CPU",
+                    type: "line",
+                    stack: "Total",
+                    areaStyle: {},
+                    emphasis: {
+                        focus: "series",
+                    },
+                    data: cpuinfo
+                },
+
             };
 
             try {
@@ -123,15 +117,15 @@ export default defineComponent({
 
                 socket = getCpuUsage((data) => {
                     cpuinfo.push(parseFloat(data))
-                    if (i != 10) {
+                    if (i != 60) {
                         i = i + 1
                         cputime.push(i)
                     } else {
                         cpuinfo.splice(0, 1)
                     }
-                    option1.xAxis.data = cputime
-                    option1.series[0].data = cpuinfo
-                    myChart1.setOption(option1);
+                    option.xAxis.data = cputime
+                    option.series.data = cpuinfo
+                    myChart.setOption(option, true);
                 })
             } catch (error) {
                 console.log(error)
@@ -140,7 +134,7 @@ export default defineComponent({
             // 使用刚指定的配置项option和数据显示图表myChart。
             myChart.setOption(option);
             // 使用刚指定的配置项option和数据显示图表myChart。
-            myChart1.setOption(option1);
+            myChart.setOption(option);
         });
 
         onUnmounted(() => {
@@ -149,9 +143,32 @@ export default defineComponent({
             }
         })
 
-        return {};
+        return {
+            cputime: '',
+            radio1: ref("New York"),
+        };
     },
 });
 </script>
+
+<style>
+
+.chart-with-button {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* 轻微的阴影效果 */
+}
+
+/* 图表容器样式 */
+.chart-container {
+    width: 800px;
+    /* 图表宽度 */
+    height: 400px;
+    /* 图表高度 */
+    margin: 20px auto;
+    /* 外边距，居中显示 */
+    position: relative;
+    /* 设置相对定位，以便按钮组可以绝对定位 */
+}
+</style>
 
 <style scoped></style>
