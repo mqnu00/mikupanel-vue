@@ -106,6 +106,7 @@ export default defineComponent({
                     emphasis: {
                         focus: "series",
                     },
+                    symbol: 'none',
                     data: cpuinfo
                 },
 
