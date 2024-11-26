@@ -43,9 +43,8 @@
 import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 
 //引入创建的echarts.ts文件
-import echarts from "../utils/echarts";
+import * as echarts from "echarts";
 import { getCpuUsage } from "../client/sysInfo";
-import { number } from "echarts";
 
 export default defineComponent({
 
@@ -88,21 +87,17 @@ export default defineComponent({
                     text: "CPU使用率",
                 },
                 tooltip: {
-                    trigger: "axis",
+                    trigger: 'axis',
                     axisPointer: {
-                        type: "cross",
-                        label: {
-                            backgroundColor: "#6a7985",
-                        },
+                        type: "line",
+                    },
+                    valueFormatter: (data: string) => {
+                        data = data + '%'
+                        return data;
                     },
                 },
                 legend: {
                     data: ["CPU"],
-                },
-                toolbox: {
-                    feature: {
-                        saveAsImage: {},
-                    },
                 },
                 grid: {
                     left: "3%",
@@ -114,7 +109,7 @@ export default defineComponent({
                     type: "category",
                     boundaryGap: false,
                     data: [] as number[],
-                    name: '/s',
+                    name: '/s'
                 },
                 yAxis: {
                     max: 100,
@@ -134,7 +129,10 @@ export default defineComponent({
                         focus: "series",
                     },
                     symbol: 'none',
-                    data: [] as number[]
+                    data: [] as {
+                        value: number;
+                        namee: number;
+                    }[],
                 },
 
             };
@@ -144,7 +142,10 @@ export default defineComponent({
                 let i = 0
 
                 socket = getCpuUsage((data) => {
-                    option.series.data.push(parseFloat(data))
+                    option.series.data.push({
+                        value: parseFloat(data),
+                        namee: i
+                    })
                     if (i != 60) {
                         i = i + 1
                         option.xAxis.data.push(i)
@@ -197,7 +198,7 @@ export default defineComponent({
                             name: '1'
                         }
                     ],
-                    chart: 'cpuChart2'
+                    chart: 'memoryChart'
                 },
                 {
                     buttons: [
@@ -238,9 +239,9 @@ export default defineComponent({
     /* 两列布局，每列占屏幕宽度的50% */
     gap: 20px;
     /* 组件之间的间隙 */
-    width: 95%;
+    width: 100%;
     /* 容器宽度占满整个视口宽度 */
-    height: 95%;
+    height: 100%;
     /* 容器高度占满整个视口高度 */
     place-items: center;
     /* 使内容在容器中居中 */
