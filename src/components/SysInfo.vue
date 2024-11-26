@@ -44,7 +44,7 @@ import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 
 //引入创建的echarts.ts文件
 import * as echarts from "echarts";
-import { getCpuUsage } from "../client/sysInfo";
+import { getCpuUsage, getMemoryUsage } from "../client/sysInfo";
 
 export default defineComponent({
 
@@ -57,7 +57,8 @@ export default defineComponent({
 
     setup() {
 
-        let socket: WebSocket | null = null;
+        let cpuSocket: WebSocket | null = null;
+        let memorySocket: WebSocket | null = null;
         /**
          * 在使用init方法初始化图表之前，确保DOM元素已经被正确加载。在Vue组件中，
          * 可以使用onMounted钩子函数来确保在DOM准备就绪后再执行初始化操作。
@@ -73,16 +74,20 @@ export default defineComponent({
           */
 
             // 基于准备好的dom，初始化echarts实例
-            var chartDom = document.getElementById("cpuChart")!;
-            var myChart = echarts.init(chartDom);
-            myChart.clear()
+            var cpuEchart = document.getElementById("cpuChart")!;
+            var cpuInfoChart = echarts.init(cpuEchart);
+            cpuInfoChart.clear()
+
+            var memoryEchart = document.getElementById("memoryChart")!;
+            var memoryInfoChart = echarts.init(memoryEchart);
+            memoryInfoChart.clear()
 
             //还可以这样一起写
-            // var myChart = echarts.init(document.getElementById("cpuChart")!);
+            // var cpuInfoChart = echarts.init(document.getElementById("cpuChart")!);
 
             // 指定图表的配置项和数据
 
-            var option = {
+            var cpuOption = {
                 title: {
                     text: "CPU使用率",
                 },
@@ -131,8 +136,97 @@ export default defineComponent({
                     symbol: 'none',
                     data: [] as {
                         value: number;
-                        namee: number;
                     }[],
+                },
+
+            };
+
+            var memoryOption = {
+                title: {
+                    text: "内存使用率",
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: "line",
+                    },
+                    formatter: function (data: any[]) {
+                        let result = '';
+                        let content = '';
+                        data.map((item, index) => {
+                            if (item.data.empty) {
+                                result = ''
+                            } else {
+                                result = ` ${item.marker}内存   ${item.data.value}%<br>
+                                            已使用：${item.data.used.toFixed(2)}<br>
+                                            空闲：${item.data.free.toFixed(2)}<br>
+                                `    
+                            }
+                        })
+                        return result;
+                    }
+
+
+                },
+                legend: {
+                    data: ["内存"],
+                },
+                grid: {
+                    left: "3%",
+                    right: "4%",
+                    bottom: "3%",
+                    containLabel: true,
+                },
+                xAxis: {
+                    type: "category",
+                    boundaryGap: false,
+                    data: [] as number[],
+                    name: '/s'
+                },
+                yAxis: {
+                    max: 100,
+                    min: 0,
+                    interval: 20,
+                    type: "value",
+                    axisLabel: {
+                        formatter: '{value}%'
+                    }
+                },
+                series: {
+                    name: "内存",
+                    type: "line",
+                    stack: "Total",
+                    emphasis: {
+                        focus: "series",
+                    },
+                    symbol: 'none',
+                    data: [] as {
+                        value: number;
+                        used: number;
+                        free: number;
+                    }[],
+                    itemStyle: {//折线拐点标志的样式
+                        borderColor: "#E9CD4B",//拐点的边框颜色
+                        borderWidth: 3.5
+                    },
+                    lineStyle: {//折线的样式
+                        color: "rgba(100,100,170,1)"
+                    },
+                    areaStyle: {//填充的颜色
+                        color: {//线性渐变前四个参数分别是 x0, y0, x2, y2, 范围从 0 - 1，相当于在图形包围盒中的百分比，如果 globalCoord 为 `true`，则该四个值是绝对的像素位置
+                            type: 'linear',
+                            x: 0,
+                            y: 1,
+                            x2: 0,
+                            y2: 0,
+                            colorStops: [{
+                                offset: 0, color: 'rgba(255,240,170,0)' // 0% 处的颜色
+                            }, {
+                                offset: 1, color: 'rgba(255,240,170,1)' // 100% 处的颜色
+                            }],
+                            globalCoord: false// 缺省为 false
+                        }
+                    },
                 },
 
             };
@@ -141,32 +235,45 @@ export default defineComponent({
 
                 let i = 0
 
-                socket = getCpuUsage((data) => {
-                    option.series.data.push({
-                        value: parseFloat(data),
-                        namee: i
+                cpuSocket = getCpuUsage((data) => {
+                    cpuOption.series.data.push({
+                        value: parseFloat(data)
+                    })
+                    if (i != 60) {
+                        cpuOption.xAxis.data.push(i)
+                    } else {
+                        cpuOption.series.data.splice(0, 1)
+                    }
+                    cpuInfoChart.setOption(cpuOption);
+                })
+
+                memorySocket = getMemoryUsage((data) => {
+                    let dataP = JSON.parse(data)
+                    memoryOption.series.data.push({
+                        value: parseFloat(dataP.value),
+                        used: parseFloat(dataP.used),
+                        free: parseFloat(dataP.free)
                     })
                     if (i != 60) {
                         i = i + 1
-                        option.xAxis.data.push(i)
+                        memoryOption.xAxis.data.push(i)
                     } else {
-                        option.series.data.splice(0, 1)
+                        memoryOption.series.data.splice(0, 1)
                     }
-                    myChart.setOption(option, true);
+                    memoryInfoChart.setOption(memoryOption);
                 })
             } catch (error) {
                 console.log(error)
             }
 
-            // 使用刚指定的配置项option和数据显示图表myChart。
-            myChart.setOption(option);
-            // 使用刚指定的配置项option和数据显示图表myChart。
-            myChart.setOption(option);
+            // 使用刚指定的配置项option和数据显示图表cpuInfoChart。
+            cpuInfoChart.setOption(cpuOption);
+            memoryInfoChart.setOption(memoryOption);
         });
 
         onUnmounted(() => {
-            if (socket) {
-                socket.close();
+            if (cpuSocket) {
+                cpuSocket.close();
             }
         })
 
