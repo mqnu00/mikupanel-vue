@@ -308,8 +308,8 @@ export default defineComponent({
 
                 cpuSocket = getCpuUsage((data) => {
                     let inputData = {
-                            value: parseFloat(data)
-                        }
+                        value: parseFloat(data)
+                    }
                     cpuOnMessage.onMessage(cpuOption, inputData, cpuInfoChart)
                 })
 
@@ -329,6 +329,21 @@ export default defineComponent({
             // 使用刚指定的配置项option和数据显示图表cpuInfoChart。
             cpuInfoChart.setOption(cpuOption);
             memoryInfoChart.setOption(memoryOption);
+
+            const viewElem = document.body;
+            const resizeObserver = new ResizeObserver(() => {
+
+                // 此处放 当窗口大小发生变化时，想要让宽高自适应的图表的.resize()，除此处外其余都是固定写法，举例如下
+                cpuInfoChart.resize();
+                memoryInfoChart.resize();
+
+                setTimeout(() => {
+                    cpuInfoChart.resize();
+                memoryInfoChart.resize();
+                }, 100);
+            });
+
+            resizeObserver.observe(viewElem);
         });
 
         onUnmounted(() => {
