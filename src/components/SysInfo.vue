@@ -96,9 +96,35 @@ export default defineComponent({
                     axisPointer: {
                         type: "line",
                     },
-                    valueFormatter: (data: string) => {
-                        data = data + '%'
-                        return data;
+                    formatter: function (data: any[]) {
+                        let result = '';
+                        let content = '';
+                        data.map((item, index) => {
+                            if (item.data.empty) {
+                                result = ''
+                            } else {
+                                result = `
+                                <div style="text-align: center;">${item.name}s</div>
+                                <style>
+                                .container {
+                                    display: flex; /* 使用flex布局 */
+                                    justify-content: space-between; /* 两端对齐 */
+                                }
+                                .left-text {
+                                    text-align: left; /* 文本靠左 */
+                                }
+                                .right-text {
+                                    text-align: right; /* 文本靠右 */
+                                }
+                                </style>
+                                <div class="container">
+                                    <div class="left-text">${item.marker}CPU</div>
+                                        &emsp; &emsp;
+                                    <div class="right-text">${item.data.value}%</div>
+                                </div>`
+                            }
+                        })
+                        return result
                     },
                 },
                 legend: {
@@ -113,8 +139,11 @@ export default defineComponent({
                 xAxis: {
                     type: "category",
                     boundaryGap: false,
-                    data: [] as number[],
-                    name: '/s'
+                    data: Array.from({ length: 60 }, (_, index) => index),
+                    name: '/s',
+                    axisLabel: {
+                        interval: 4
+                    }
                 },
                 yAxis: {
                     max: 100,
@@ -157,10 +186,35 @@ export default defineComponent({
                             if (item.data.empty) {
                                 result = ''
                             } else {
-                                result = ` ${item.marker}内存   ${item.data.value}%<br>
-                                            已使用：${item.data.used.toFixed(2)}<br>
-                                            空闲：${item.data.free.toFixed(2)}<br>
-                                `    
+                                result = `
+                                <div style="text-align: center;">${item.name}s</div>
+                                <style>
+                                .container {
+                                    display: flex; /* 使用flex布局 */
+                                    justify-content: space-between; /* 两端对齐 */
+                                }
+                                .left-text {
+                                    text-align: left; /* 文本靠左 */
+                                }
+                                .right-text {
+                                    text-align: right; /* 文本靠右 */
+                                }
+                                </style>
+                                <div class="container">
+                                    <div class="left-text">${item.marker}内存</div>
+                                        &emsp; &emsp;
+                                    <div class="right-text">${item.data.value}%</div>
+                                </div>
+                                <div class="container">
+                                    <div class="left-text">已使用</div>
+                                        &emsp; &emsp;
+                                    <div class="right-text">${item.data.used.toFixed(2)}G</div>
+                                </div>
+                                <div class="container">
+                                    <div class="left-text">空闲</div>
+                                        &emsp; &emsp;
+                                    <div class="right-text">${item.data.free.toFixed(2)}G</div>
+                                </div>`
                             }
                         })
                         return result;
@@ -180,8 +234,11 @@ export default defineComponent({
                 xAxis: {
                     type: "category",
                     boundaryGap: false,
-                    data: [] as number[],
-                    name: '/s'
+                    data: Array.from({ length: 60 }, (_, index) => index),
+                    name: '/s',
+                    axisLabel: {
+                        interval: 4
+                    }
                 },
                 yAxis: {
                     max: 100,
@@ -233,34 +290,37 @@ export default defineComponent({
 
             try {
 
-                let i = 0
+                let ii = 0
+
+                class SysInfoOnMessage {
+                    private i = 0;
+                    onMessage(option: any, data: any, chart: any) {
+                        option.series.data.push(data)
+                        if (this.i == 60) {
+                            option.series.data.splice(0, 1)
+                        } else this.i = this.i + 1;
+                        chart.setOption(option);
+                    }
+                }
+
+                let cpuOnMessage = new SysInfoOnMessage();
+                let memoryOnMessage = new SysInfoOnMessage();
 
                 cpuSocket = getCpuUsage((data) => {
-                    cpuOption.series.data.push({
-                        value: parseFloat(data)
-                    })
-                    if (i != 60) {
-                        cpuOption.xAxis.data.push(i)
-                    } else {
-                        cpuOption.series.data.splice(0, 1)
-                    }
-                    cpuInfoChart.setOption(cpuOption);
+                    let inputData = {
+                            value: parseFloat(data)
+                        }
+                    cpuOnMessage.onMessage(cpuOption, inputData, cpuInfoChart)
                 })
 
                 memorySocket = getMemoryUsage((data) => {
                     let dataP = JSON.parse(data)
-                    memoryOption.series.data.push({
+                    let inputData = {
                         value: parseFloat(dataP.value),
                         used: parseFloat(dataP.used),
                         free: parseFloat(dataP.free)
-                    })
-                    if (i != 60) {
-                        i = i + 1
-                        memoryOption.xAxis.data.push(i)
-                    } else {
-                        memoryOption.series.data.splice(0, 1)
                     }
-                    memoryInfoChart.setOption(memoryOption);
+                    memoryOnMessage.onMessage(memoryOption, inputData, memoryInfoChart)
                 })
             } catch (error) {
                 console.log(error)
