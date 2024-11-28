@@ -44,7 +44,7 @@ import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 
 //引入创建的echarts.ts文件
 import * as echarts from "echarts";
-import { getCpuUsage, getMemoryUsage } from "../client/sysInfo";
+import { getCpuUsage, getMemoryUsage, getNetworkUsage } from "../client/sysInfo";
 
 export default defineComponent({
 
@@ -59,6 +59,7 @@ export default defineComponent({
 
         let cpuSocket: WebSocket | null = null;
         let memorySocket: WebSocket | null = null;
+        let networkSocket: WebSocket | null = null;
         /**
          * 在使用init方法初始化图表之前，确保DOM元素已经被正确加载。在Vue组件中，
          * 可以使用onMounted钩子函数来确保在DOM准备就绪后再执行初始化操作。
@@ -82,6 +83,10 @@ export default defineComponent({
             var memoryInfoChart = echarts.init(memoryEchart);
             memoryInfoChart.clear()
 
+            var networkEchart = document.getElementById("networkChart")!;
+            var networkInfoChart = echarts.init(networkEchart);
+            networkInfoChart.clear()
+
             //还可以这样一起写
             // var cpuInfoChart = echarts.init(document.getElementById("cpuChart")!);
 
@@ -98,7 +103,6 @@ export default defineComponent({
                     },
                     formatter: function (data: any[]) {
                         let result = '';
-                        let content = '';
                         data.map((item, index) => {
                             if (item.data.empty) {
                                 result = ''
@@ -181,7 +185,6 @@ export default defineComponent({
                     },
                     formatter: function (data: any[]) {
                         let result = '';
-                        let content = '';
                         data.map((item, index) => {
                             if (item.data.empty) {
                                 result = ''
@@ -288,9 +291,124 @@ export default defineComponent({
 
             };
 
-            try {
+            var networkOption = {
+                title: {
+                    text: "网络IO",
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: "line",
+                    },
+                    formatter: function (data: any[]) {
+                        console.log("???")
+                        let result = '';
+                        data.map((item, index) => {
+                            if (item.data.empty) {
+                                result = ''
+                            } else {
+                                console.log(item.data)
+                                result = `
+                                <div style="text-align: center;">${item.name}s</div>
+                                <style>
+                                .container {
+                                    display: flex; /* 使用flex布局 */
+                                    justify-content: space-between; /* 两端对齐 */
+                                }
+                                .left-text {
+                                    text-align: left; /* 文本靠左 */
+                                }
+                                .right-text {
+                                    text-align: right; /* 文本靠右 */
+                                }
+                                </style>
+                                <div class="container">
+                                    <div class="left-text">${item.marker}网络</div>
+                                        &emsp; &emsp;
+                                    <div class="right-text">${item.data.value}%</div>
+                                </div>
+                                <div class="container">
+                                    <div class="left-text">已使用</div>
+                                        &emsp; &emsp;
+                                    <div class="right-text">${item.data[0].value.toFixed(2)}G</div>
+                                </div>
+                                <div class="container">
+                                    <div class="left-text">空闲</div>
+                                        &emsp; &emsp;
+                                    <div class="right-text">${item.data[1].value.toFixed(2)}G</div>
+                                </div>`
+                            }
+                        })
+                        return result;
+                    }
+                },
+                legend: {
+                    data: ["网络"],
+                },
+                grid: {
+                    left: "3%",
+                    right: "4%",
+                    bottom: "3%",
+                    containLabel: true,
+                },
+                xAxis: {
+                    type: "category",
+                    boundaryGap: false,
+                    data: Array.from({ length: 60 }, (_, index) => index),
+                    name: '/s',
+                    axisLabel: {
+                        interval: 4
+                    }
+                },
+                yAxis: {
+                    max: 100,
+                    min: 0,
+                    interval: 20,
+                    type: "value",
+                    axisLabel: {
+                        formatter: '{value}%'
+                    }
+                },
+                series: {
+                    name: "网络",
+                    type: "line",
+                    stack: "Total",
+                    emphasis: {
+                        focus: "series",
+                    },
+                    symbol: 'none',
+                    data: [] as {
+                        value: number;
+                        used: number;
+                        free: number;
+                    }[],
+                    itemStyle: {//折线拐点标志的样式
+                        borderColor: "#E9CD4B",//拐点的边框颜色
+                        borderWidth: 3.5
+                    },
+                    lineStyle: {//折线的样式
+                        color: "rgba(100,100,170,1)"
+                    },
+                    areaStyle: {//填充的颜色
+                        color: {//线性渐变前四个参数分别是 x0, y0, x2, y2, 范围从 0 - 1，相当于在图形包围盒中的百分比，如果 globalCoord 为 `true`，则该四个值是绝对的像素位置
+                            type: 'linear',
+                            x: 0,
+                            y: 1,
+                            x2: 0,
+                            y2: 0,
+                            colorStops: [{
+                                offset: 0, color: 'rgba(255,240,170,0)' // 0% 处的颜色
+                            }, {
+                                offset: 1, color: 'rgba(255,240,170,1)' // 100% 处的颜色
+                            }],
+                            globalCoord: false// 缺省为 false
+                        }
+                    },
+                },
 
-                let ii = 0
+            };
+
+            try {
 
                 class SysInfoOnMessage {
                     private i = 0;
@@ -305,6 +423,7 @@ export default defineComponent({
 
                 let cpuOnMessage = new SysInfoOnMessage();
                 let memoryOnMessage = new SysInfoOnMessage();
+                let networkOnMessage = new SysInfoOnMessage();
 
                 cpuSocket = getCpuUsage((data) => {
                     let inputData = {
@@ -322,6 +441,20 @@ export default defineComponent({
                     }
                     memoryOnMessage.onMessage(memoryOption, inputData, memoryInfoChart)
                 })
+
+                networkSocket = getNetworkUsage((data) => {
+                    let dataP = JSON.parse(data)
+                    let inputData = 
+                        {
+                            value: parseFloat(dataP.send)
+                        }
+                        // {
+                        //     value: parseFloat(dataP.recv)
+                        // }
+                    
+                    networkOnMessage.onMessage(networkOption, inputData, networkInfoChart)
+                })
+
             } catch (error) {
                 console.log(error)
             }
@@ -329,6 +462,7 @@ export default defineComponent({
             // 使用刚指定的配置项option和数据显示图表cpuInfoChart。
             cpuInfoChart.setOption(cpuOption);
             memoryInfoChart.setOption(memoryOption);
+            networkInfoChart.setOption(networkOption);
 
             const viewElem = document.body;
             const resizeObserver = new ResizeObserver(() => {
@@ -336,10 +470,12 @@ export default defineComponent({
                 // 此处放 当窗口大小发生变化时，想要让宽高自适应的图表的.resize()，除此处外其余都是固定写法，举例如下
                 cpuInfoChart.resize();
                 memoryInfoChart.resize();
+                networkInfoChart.resize();
 
                 setTimeout(() => {
                     cpuInfoChart.resize();
-                memoryInfoChart.resize();
+                    memoryInfoChart.resize();
+                    networkInfoChart.resize();
                 }, 100);
             });
 
@@ -393,7 +529,7 @@ export default defineComponent({
                             name: '1'
                         }
                     ],
-                    chart: 'cpuChart3'
+                    chart: 'networkChart'
                 },
                 {
                     buttons: [
