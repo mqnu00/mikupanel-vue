@@ -122,7 +122,7 @@ export default defineComponent({
                                 }
                                 </style>
                                 <div class="container">
-                                    <div class="left-text">${item.marker}CPU</div>
+                                    <div class="left-text">${item.marker}${item.seriesName}</div>
                                         &emsp; &emsp;
                                     <div class="right-text">${item.data.value}%</div>
                                 </div>`
@@ -140,7 +140,7 @@ export default defineComponent({
                     bottom: "3%",
                     containLabel: true,
                 },
-                xAxis: {
+                xAxis: [{
                     type: "category",
                     boundaryGap: false,
                     data: Array.from({ length: 60 }, (_, index) => index),
@@ -148,8 +148,8 @@ export default defineComponent({
                     axisLabel: {
                         interval: 4
                     }
-                },
-                yAxis: {
+                }],
+                yAxis: [{
                     max: 100,
                     min: 0,
                     interval: 20,
@@ -157,11 +157,10 @@ export default defineComponent({
                     axisLabel: {
                         formatter: '{value}%'
                     }
-                },
-                series: {
+                }],
+                series: [{
                     name: "CPU",
                     type: "line",
-                    stack: "Total",
                     areaStyle: {},
                     emphasis: {
                         focus: "series",
@@ -170,7 +169,7 @@ export default defineComponent({
                     data: [] as {
                         value: number;
                     }[],
-                },
+                }],
 
             };
 
@@ -204,7 +203,7 @@ export default defineComponent({
                                 }
                                 </style>
                                 <div class="container">
-                                    <div class="left-text">${item.marker}内存</div>
+                                    <div class="left-text">${item.marker}${item.seriesName}</div>
                                         &emsp; &emsp;
                                     <div class="right-text">${item.data.value}%</div>
                                 </div>
@@ -234,7 +233,7 @@ export default defineComponent({
                     bottom: "3%",
                     containLabel: true,
                 },
-                xAxis: {
+                xAxis: [{
                     type: "category",
                     boundaryGap: false,
                     data: Array.from({ length: 60 }, (_, index) => index),
@@ -242,8 +241,8 @@ export default defineComponent({
                     axisLabel: {
                         interval: 4
                     }
-                },
-                yAxis: {
+                }],
+                yAxis: [{
                     max: 100,
                     min: 0,
                     interval: 20,
@@ -251,11 +250,10 @@ export default defineComponent({
                     axisLabel: {
                         formatter: '{value}%'
                     }
-                },
-                series: {
+                }],
+                series: [{
                     name: "内存",
                     type: "line",
-                    stack: "Total",
                     emphasis: {
                         focus: "series",
                     },
@@ -287,7 +285,7 @@ export default defineComponent({
                             globalCoord: false// 缺省为 false
                         }
                     },
-                },
+                }],
 
             };
 
@@ -301,15 +299,18 @@ export default defineComponent({
                         type: "line",
                     },
                     formatter: function (data: any[]) {
-                        console.log("???")
                         let result = '';
                         data.map((item, index) => {
                             if (item.data.empty) {
-                                result = ''
+                                // result = ''
                             } else {
-                                console.log(item.data)
-                                result = `
+                                console.log(item)
+                                if (result == '') {
+                                    result = `
                                 <div style="text-align: center;">${item.name}s</div>
+                                `
+                                } 
+                                result = result + `
                                 <style>
                                 .container {
                                     display: flex; /* 使用flex布局 */
@@ -323,27 +324,19 @@ export default defineComponent({
                                 }
                                 </style>
                                 <div class="container">
-                                    <div class="left-text">${item.marker}网络</div>
+                                    <div class="left-text">${item.marker}${item.seriesName}</div>
                                         &emsp; &emsp;
-                                    <div class="right-text">${item.data.value}%</div>
-                                </div>
-                                <div class="container">
-                                    <div class="left-text">已使用</div>
-                                        &emsp; &emsp;
-                                    <div class="right-text">${item.data[0].value.toFixed(2)}G</div>
-                                </div>
-                                <div class="container">
-                                    <div class="left-text">空闲</div>
-                                        &emsp; &emsp;
-                                    <div class="right-text">${item.data[1].value.toFixed(2)}G</div>
+                                    <div class="right-text">${item.data.value.toFixed(2)}MiB/s</div>
                                 </div>`
+                                
+
                             }
                         })
                         return result;
                     }
                 },
                 legend: {
-                    data: ["网络"],
+                    data: ["网络上行", "网络下行"],
                 },
                 grid: {
                     left: "3%",
@@ -351,7 +344,7 @@ export default defineComponent({
                     bottom: "3%",
                     containLabel: true,
                 },
-                xAxis: {
+                xAxis: [{
                     type: "category",
                     boundaryGap: false,
                     data: Array.from({ length: 60 }, (_, index) => index),
@@ -359,52 +352,82 @@ export default defineComponent({
                     axisLabel: {
                         interval: 4
                     }
-                },
+                }],
                 yAxis: {
-                    max: 100,
-                    min: 0,
-                    interval: 20,
+                    show: true,
+                    // max: 'auto',
+                    // min: 'auto',
                     type: "value",
                     axisLabel: {
-                        formatter: '{value}%'
+                        formatter: '{value}MiB/s'
                     }
                 },
-                series: {
-                    name: "网络",
-                    type: "line",
-                    stack: "Total",
-                    emphasis: {
-                        focus: "series",
-                    },
-                    symbol: 'none',
-                    data: [] as {
-                        value: number;
-                        used: number;
-                        free: number;
-                    }[],
-                    itemStyle: {//折线拐点标志的样式
-                        borderColor: "#E9CD4B",//拐点的边框颜色
-                        borderWidth: 3.5
-                    },
-                    lineStyle: {//折线的样式
-                        color: "rgba(100,100,170,1)"
-                    },
-                    areaStyle: {//填充的颜色
-                        color: {//线性渐变前四个参数分别是 x0, y0, x2, y2, 范围从 0 - 1，相当于在图形包围盒中的百分比，如果 globalCoord 为 `true`，则该四个值是绝对的像素位置
-                            type: 'linear',
-                            x: 0,
-                            y: 1,
-                            x2: 0,
-                            y2: 0,
-                            colorStops: [{
-                                offset: 0, color: 'rgba(255,240,170,0)' // 0% 处的颜色
-                            }, {
-                                offset: 1, color: 'rgba(255,240,170,1)' // 100% 处的颜色
-                            }],
-                            globalCoord: false// 缺省为 false
-                        }
-                    },
-                },
+                series: [
+                    {
+                        name: "网络上行",
+                        type: "line",
+                        emphasis: {
+                            focus: "series",
+                        },
+                        symbol: 'none',
+                        data: [] as {
+                            value: number;
+                        }[],
+                        itemStyle: {//折线拐点标志的样式
+                            borderColor: "#E9CD4B",//拐点的边框颜色
+                            borderWidth: 3.5
+                        },
+                        lineStyle: {//折线的样式
+                            color: "rgba(100,100,170,1)"
+                        },
+                        areaStyle: {//填充的颜色
+                            color: {//线性渐变前四个参数分别是 x0, y0, x2, y2, 范围从 0 - 1，相当于在图形包围盒中的百分比，如果 globalCoord 为 `true`，则该四个值是绝对的像素位置
+                                type: 'linear',
+                                x: 0,
+                                y: 1,
+                                x2: 0,
+                                y2: 0,
+                                colorStops: [{
+                                    offset: 0, color: 'rgba(100,100,170,1)' // 0% 处的颜色
+                                }, {
+                                    offset: 1, color: 'rgba(255,240,170,1)' // 100% 处的颜色
+                                }],
+                                globalCoord: false// 缺省为 false
+                            }
+                        },
+                    }, {
+                        name: "网络下行",
+                        type: "line",
+                        emphasis: {
+                            focus: "series",
+                        },
+                        symbol: 'none',
+                        data: [] as {
+                            value: number;
+                        }[],
+                        itemStyle: {//折线拐点标志的样式
+                            borderColor: "#E9CD4B",//拐点的边框颜色
+                            borderWidth: 3.5
+                        },
+                        lineStyle: {//折线的样式
+                            color: "rgba(10,240,10,0)"
+                        },
+                        areaStyle: {//填充的颜色
+                            color: {//线性渐变前四个参数分别是 x0, y0, x2, y2, 范围从 0 - 1，相当于在图形包围盒中的百分比，如果 globalCoord 为 `true`，则该四个值是绝对的像素位置
+                                type: 'linear',
+                                x: 0,
+                                y: 1,
+                                x2: 0,
+                                y2: 0,
+                                colorStops: [{
+                                    offset: 0, color: 'rgba(10,240,10,0)' // 0% 处的颜色
+                                }, {
+                                    offset: 1, color: 'rgba(255,240,170,1)' // 100% 处的颜色
+                                }],
+                                globalCoord: false// 缺省为 false
+                            }
+                        },
+                    }],
 
             };
 
@@ -413,11 +436,15 @@ export default defineComponent({
                 class SysInfoOnMessage {
                     private i = 0;
                     onMessage(option: any, data: any, chart: any) {
-                        option.series.data.push(data)
+                        for (let itr = 0; itr < data.length; itr++) {
+                            option.series[itr].data.push(data[itr])
+                        }
                         if (this.i == 60) {
-                            option.series.data.splice(0, 1)
+                            for (let itr = 0; itr < data.length; itr++) {
+                                option.series[itr].data.splice(0, 1)
+                            }
                         } else this.i = this.i + 1;
-                        chart.setOption(option);
+                        return option;
                     }
                 }
 
@@ -426,33 +453,31 @@ export default defineComponent({
                 let networkOnMessage = new SysInfoOnMessage();
 
                 cpuSocket = getCpuUsage((data) => {
-                    let inputData = {
+                    let inputData = [{
                         value: parseFloat(data)
-                    }
-                    cpuOnMessage.onMessage(cpuOption, inputData, cpuInfoChart)
+                    }]
+                    cpuInfoChart.setOption(cpuOnMessage.onMessage(cpuOption, inputData, cpuInfoChart))
                 })
 
                 memorySocket = getMemoryUsage((data) => {
                     let dataP = JSON.parse(data)
-                    let inputData = {
+                    let inputData = [{
                         value: parseFloat(dataP.value),
                         used: parseFloat(dataP.used),
                         free: parseFloat(dataP.free)
-                    }
-                    memoryOnMessage.onMessage(memoryOption, inputData, memoryInfoChart)
+                    }]
+                    memoryInfoChart.setOption(memoryOnMessage.onMessage(memoryOption, inputData, memoryInfoChart))
                 })
 
                 networkSocket = getNetworkUsage((data) => {
                     let dataP = JSON.parse(data)
-                    let inputData = 
-                        {
-                            value: parseFloat(dataP.send)
-                        }
-                        // {
-                        //     value: parseFloat(dataP.recv)
-                        // }
-                    
-                    networkOnMessage.onMessage(networkOption, inputData, networkInfoChart)
+                    let inputData = [{
+                        value: parseFloat(dataP.send)
+                    }, {
+                        value: parseFloat(dataP.recv)
+                    }]
+
+                    networkInfoChart.setOption(networkOnMessage.onMessage(networkOption, inputData, networkInfoChart))
                 })
 
             } catch (error) {
