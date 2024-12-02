@@ -6,8 +6,10 @@
 
 
 
-            <div class="cpu">
-                <button v-for="item in group.buttons" :key="item.id" class="toggle-button">{{ item.name }}
+            <div class="chart">
+                <button v-for="item in group.buttons" :key="item.id" class="toggle-button"
+                    :class="{ 'active':  getActive(item.id) }" @click="check(item.id)">
+                    {{ item.name }}
                 </button>
             </div>
 
@@ -50,8 +52,27 @@ export default defineComponent({
 
     methods: {
         check(name: string) {
-            this.radio1 = name
-            console.log(this.radio1)
+            if (name.includes("cpu")) {
+                this.cpuSelected = name
+            } else if (name.includes("memory")) {
+                this.memorySelected = name
+            } else if (name.includes("network")) {
+                this.networkSelected = name
+            } else {
+                this.diskSelected = name
+            }
+        },
+
+        getActive(name: string) {
+            if (name.includes("cpu") && this.cpuSelected === name) {
+                return true;
+            } else if (name.includes("memory") && this.memorySelected === name) {
+                return true;
+            } else if (name.includes("network") && this.networkSelected === name) {
+                return true;
+            } else if (name.includes("disk") && this.diskSelected === name) {
+                return true;
+            } else return false;
         }
     },
 
@@ -313,7 +334,7 @@ export default defineComponent({
                                     result = `
                                 <div style="text-align: center;">${item.name}s</div>
                                 `
-                                } 
+                                }
                                 result = result + `
                                 <style>
                                 .container {
@@ -332,7 +353,7 @@ export default defineComponent({
                                         &emsp; &emsp;
                                     <div class="right-text">${item.data.value.toFixed(2)}MiB/s</div>
                                 </div>`
-                                
+
 
                             }
                         })
@@ -454,7 +475,7 @@ export default defineComponent({
                                     result = `
                                 <div style="text-align: center;">${item.name}s</div>
                                 `
-                                } 
+                                }
                                 result = result + `
                                 <style>
                                 .container {
@@ -473,7 +494,7 @@ export default defineComponent({
                                         &emsp; &emsp;
                                     <div class="right-text">${item.data.value.toFixed(2)}MiB/s</div>
                                 </div>`
-                                
+
 
                             }
                         })
@@ -675,17 +696,24 @@ export default defineComponent({
 
         return {
             cputime: '',
-            radio1: ref("流量"),
+            cpuSelected: ref("cpu1"),
+            memorySelected: ref("memory1"),
+            networkSelected: ref("network1"),
+            diskSelected: ref("disk1"),
             buttonGroups: [
                 {
                     buttons: [
                         {
-                            id: 1,
-                            name: '1'
+                            id: "cpu1",
+                            name: '实时'
                         },
                         {
-                            id: 1,
-                            name: '1'
+                            id: "cpu2",
+                            name: '过去1周'
+                        },
+                        {
+                            id: "cpu3",
+                            name: '过去1个月'
                         }
                     ],
                     chart: 'cpuChart'
@@ -693,12 +721,16 @@ export default defineComponent({
                 {
                     buttons: [
                         {
-                            id: 1,
-                            name: '1'
+                            id: "memory1",
+                            name: '实时'
                         },
                         {
-                            id: 1,
-                            name: '1'
+                            id: "memory2",
+                            name: '过去1周'
+                        },
+                        {
+                            id: "memory3",
+                            name: '过去1个月'
                         }
                     ],
                     chart: 'memoryChart'
@@ -706,12 +738,16 @@ export default defineComponent({
                 {
                     buttons: [
                         {
-                            id: 1,
-                            name: '1'
+                            id: "network1",
+                            name: '实时'
                         },
                         {
-                            id: 1,
-                            name: '1'
+                            id: "network2",
+                            name: '过去1周'
+                        },
+                        {
+                            id: "network3",
+                            name: '过去1个月'
                         }
                     ],
                     chart: 'networkChart'
@@ -719,12 +755,16 @@ export default defineComponent({
                 {
                     buttons: [
                         {
-                            id: 1,
-                            name: '1'
+                            id: "disk1",
+                            name: '实时'
                         },
                         {
-                            id: 1,
-                            name: '1'
+                            id: "disk2",
+                            name: '过去1周'
+                        },
+                        {
+                            id: "disk3",
+                            name: '过去1个月'
                         }
                     ],
                     chart: 'diskChart'
@@ -776,7 +816,7 @@ export default defineComponent({
 }
 
 /* 为radio组容器设置绝对定位 */
-.cpu {
+.chart {
     position: absolute;
     top: 10px;
     /* 距离顶部10px */
