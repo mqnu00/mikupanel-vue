@@ -44,7 +44,7 @@ import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 
 //引入创建的echarts.ts文件
 import * as echarts from "echarts";
-import { getCpuUsage, getMemoryUsage, getNetworkUsage } from "../client/sysInfo";
+import { getCpuUsage, getDiskUsage, getMemoryUsage, getNetworkUsage } from "../client/sysInfo";
 
 export default defineComponent({
 
@@ -60,6 +60,7 @@ export default defineComponent({
         let cpuSocket: WebSocket | null = null;
         let memorySocket: WebSocket | null = null;
         let networkSocket: WebSocket | null = null;
+        let diskSocket: WebSocket | null = null;
         /**
          * 在使用init方法初始化图表之前，确保DOM元素已经被正确加载。在Vue组件中，
          * 可以使用onMounted钩子函数来确保在DOM准备就绪后再执行初始化操作。
@@ -86,6 +87,10 @@ export default defineComponent({
             var networkEchart = document.getElementById("networkChart")!;
             var networkInfoChart = echarts.init(networkEchart);
             networkInfoChart.clear()
+
+            var diskEchart = document.getElementById("diskChart")!;
+            var diskInfoChart = echarts.init(diskEchart);
+            diskInfoChart.clear()
 
             //还可以这样一起写
             // var cpuInfoChart = echarts.init(document.getElementById("cpuChart")!);
@@ -304,7 +309,6 @@ export default defineComponent({
                             if (item.data.empty) {
                                 // result = ''
                             } else {
-                                console.log(item)
                                 if (result == '') {
                                     result = `
                                 <div style="text-align: center;">${item.name}s</div>
@@ -431,6 +435,147 @@ export default defineComponent({
 
             };
 
+            var diskOption = {
+                title: {
+                    text: "磁盘IO",
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: "line",
+                    },
+                    formatter: function (data: any[]) {
+                        let result = '';
+                        data.map((item, index) => {
+                            if (item.data.empty) {
+                                // result = ''
+                            } else {
+                                if (result == '') {
+                                    result = `
+                                <div style="text-align: center;">${item.name}s</div>
+                                `
+                                } 
+                                result = result + `
+                                <style>
+                                .container {
+                                    display: flex; /* 使用flex布局 */
+                                    justify-content: space-between; /* 两端对齐 */
+                                }
+                                .left-text {
+                                    text-align: left; /* 文本靠左 */
+                                }
+                                .right-text {
+                                    text-align: right; /* 文本靠右 */
+                                }
+                                </style>
+                                <div class="container">
+                                    <div class="left-text">${item.marker}${item.seriesName}</div>
+                                        &emsp; &emsp;
+                                    <div class="right-text">${item.data.value.toFixed(2)}MiB/s</div>
+                                </div>`
+                                
+
+                            }
+                        })
+                        return result;
+                    }
+                },
+                legend: {
+                    data: ["磁盘读取", "磁盘写入"],
+                },
+                grid: {
+                    left: "3%",
+                    right: "4%",
+                    bottom: "3%",
+                    containLabel: true,
+                },
+                xAxis: [{
+                    type: "category",
+                    boundaryGap: false,
+                    data: Array.from({ length: 60 }, (_, index) => index),
+                    name: '/s',
+                    axisLabel: {
+                        interval: 4
+                    }
+                }],
+                yAxis: {
+                    show: true,
+                    // max: 'auto',
+                    // min: 'auto',
+                    type: "value",
+                    axisLabel: {
+                        formatter: '{value}MiB/s'
+                    }
+                },
+                series: [
+                    {
+                        name: "磁盘读取",
+                        type: "line",
+                        emphasis: {
+                            focus: "series",
+                        },
+                        symbol: 'none',
+                        data: [] as {
+                            value: number;
+                        }[],
+                        itemStyle: {//折线拐点标志的样式
+                            borderColor: "#E9CD4B",//拐点的边框颜色
+                            borderWidth: 3.5
+                        },
+                        lineStyle: {//折线的样式
+                            color: "rgba(100,100,170,1)"
+                        },
+                        areaStyle: {//填充的颜色
+                            color: {//线性渐变前四个参数分别是 x0, y0, x2, y2, 范围从 0 - 1，相当于在图形包围盒中的百分比，如果 globalCoord 为 `true`，则该四个值是绝对的像素位置
+                                type: 'linear',
+                                x: 0,
+                                y: 1,
+                                x2: 0,
+                                y2: 0,
+                                colorStops: [{
+                                    offset: 0, color: 'rgba(100,100,170,1)' // 0% 处的颜色
+                                }, {
+                                    offset: 1, color: 'rgba(255,240,170,1)' // 100% 处的颜色
+                                }],
+                                globalCoord: false// 缺省为 false
+                            }
+                        },
+                    }, {
+                        name: "磁盘写入",
+                        type: "line",
+                        emphasis: {
+                            focus: "series",
+                        },
+                        symbol: 'none',
+                        data: [] as {
+                            value: number;
+                        }[],
+                        itemStyle: {//折线拐点标志的样式
+                            borderColor: "#E9CD4B",//拐点的边框颜色
+                            borderWidth: 3.5
+                        },
+                        lineStyle: {//折线的样式
+                            color: "rgba(10,240,10,0)"
+                        },
+                        areaStyle: {//填充的颜色
+                            color: {//线性渐变前四个参数分别是 x0, y0, x2, y2, 范围从 0 - 1，相当于在图形包围盒中的百分比，如果 globalCoord 为 `true`，则该四个值是绝对的像素位置
+                                type: 'linear',
+                                x: 0,
+                                y: 1,
+                                x2: 0,
+                                y2: 0,
+                                colorStops: [{
+                                    offset: 0, color: 'rgba(10,240,10,0)' // 0% 处的颜色
+                                }, {
+                                    offset: 1, color: 'rgba(255,240,170,1)' // 100% 处的颜色
+                                }],
+                                globalCoord: false// 缺省为 false
+                            }
+                        },
+                    }],
+
+            };
+
             try {
 
                 class SysInfoOnMessage {
@@ -451,6 +596,7 @@ export default defineComponent({
                 let cpuOnMessage = new SysInfoOnMessage();
                 let memoryOnMessage = new SysInfoOnMessage();
                 let networkOnMessage = new SysInfoOnMessage();
+                let diskOnMessage = new SysInfoOnMessage();
 
                 cpuSocket = getCpuUsage((data) => {
                     let inputData = [{
@@ -480,6 +626,17 @@ export default defineComponent({
                     networkInfoChart.setOption(networkOnMessage.onMessage(networkOption, inputData, networkInfoChart))
                 })
 
+                diskSocket = getDiskUsage((data) => {
+                    let dataP = JSON.parse(data)
+                    let inputData = [{
+                        value: parseFloat(dataP.read)
+                    }, {
+                        value: parseFloat(dataP.write)
+                    }]
+
+                    diskInfoChart.setOption(diskOnMessage.onMessage(diskOption, inputData, diskInfoChart))
+                })
+
             } catch (error) {
                 console.log(error)
             }
@@ -488,6 +645,7 @@ export default defineComponent({
             cpuInfoChart.setOption(cpuOption);
             memoryInfoChart.setOption(memoryOption);
             networkInfoChart.setOption(networkOption);
+            diskInfoChart.setOption(diskOption);
 
             const viewElem = document.body;
             const resizeObserver = new ResizeObserver(() => {
@@ -496,11 +654,13 @@ export default defineComponent({
                 cpuInfoChart.resize();
                 memoryInfoChart.resize();
                 networkInfoChart.resize();
+                diskInfoChart.resize();
 
                 setTimeout(() => {
                     cpuInfoChart.resize();
                     memoryInfoChart.resize();
                     networkInfoChart.resize();
+                    diskInfoChart.resize();
                 }, 100);
             });
 
@@ -567,7 +727,7 @@ export default defineComponent({
                             name: '1'
                         }
                     ],
-                    chart: 'cpuChart4'
+                    chart: 'diskChart'
                 },
             ]
         };
