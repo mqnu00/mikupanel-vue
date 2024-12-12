@@ -18,7 +18,7 @@
     <!-- 应用商店 -->
     <el-menu-item index="/app-store">
       <el-icon style="vertical-align: middle">
-        <Grid />
+        <Shop />
       </el-icon>
       <span>应用商店</span>
     </el-menu-item>
@@ -70,8 +70,12 @@ export default defineComponent({
   图标颜色 */
 }
 
-/* span {
-  font-family: 'Roboto', sans-serif;
-} */
+/* Active menu item style */
+.el-menu-item.is-active {
+  background-color: rgba(64, 158, 255, 0.2) !important; /* Light blue background */
+  border-left: 4px solid #409EFF !important; /* Blue left border */
+  color: #409EFF !important; /* Text color */
+  font-weight: bold;
+}
 
 </style>
