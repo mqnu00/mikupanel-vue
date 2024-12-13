@@ -756,7 +756,7 @@ export default defineComponent({
                     buttons: [
                         {
                             id: "disk1",
-                            name: '实时'
+                            name: '实时==='
                         },
                         {
                             id: "disk2",
@@ -862,5 +862,3 @@ export default defineComponent({
     /* 添加底部边框 */
 }
 </style>
-
-<style scoped></style>
