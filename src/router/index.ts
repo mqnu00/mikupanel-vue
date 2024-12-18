@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 import SysInfo from '../components/SysInfo.vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -19,7 +18,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/terminal',
     name: 'terminal',
-    component: () => import(/* webpackChunkName: "about" */ '../components/TerminalShell.vue')
+    component: () => import(/* webpackChunkName: "about" */ '../components/WebSSH.vue')
   }
 ]
 
