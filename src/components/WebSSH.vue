@@ -5,7 +5,7 @@
   </template>
   
   <script>
-  import ConsoleT from './ConsoleT'
+  import ConsoleT from './ConsoleT.vue'
   
   export default {
     name: 'WebSSH',
@@ -14,8 +14,8 @@
         terminal: {
           pid: 1,
           name: 'terminal',
-          cols: 400,
-          rows: 400
+          cols: 500,
+          rows: 40
         }
       }
     },
