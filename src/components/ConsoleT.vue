@@ -41,6 +41,9 @@
         console.log(width, height)
         // const cols = Math.floor(width / 10);  // 每个字符宽度大约为 9px
         // const rows = Math.floor(height / 24); // 每行高度大约为 20px
+        // font-size: 20
+        // width-px: 2300 ->170 - 180
+        // height-px: 580 -> 35 - 40
         const cols = 170;
         const rows = 35;
         return { cols, rows };
