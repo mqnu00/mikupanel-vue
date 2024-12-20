@@ -7,5 +7,12 @@ module.exports = defineConfig({
         additionalData: `@import "@/assets/variable.scss";`
       }
     }
+  },
+  configureWebpack: {
+    resolve: {
+      alias: {
+        '@': require('path').resolve(__dirname, 'src/')
+      }
+    }
   }
 })
