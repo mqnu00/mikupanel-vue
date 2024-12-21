@@ -1,7 +1,5 @@
 <template>
-    <div class="container">
-      <my-terminal :terminal="terminal"></my-terminal>
-    </div>
+    <my-terminal :terminal="terminal"></my-terminal>
   </template>
   
   <script>

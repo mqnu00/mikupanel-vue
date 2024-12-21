@@ -1,116 +1,148 @@
 <template>
-    <div class="console" id="terminal"></div>
-  </template>
-  
-  <script>
-  import { Terminal } from 'xterm';
-  import { AttachAddon } from 'xterm-addon-attach';
-  import { FitAddon } from 'xterm-addon-fit';
-  import 'xterm/css/xterm.css';
-  
-  export default {
-    name: 'ConsoleT',
-    props: {
-      terminal: {
-        type: Object,
-        required: true
-      }
-    },
-    data() {
-      return {
-        term: null,
-        terminalSocket: null
-      };
-    },
-    methods: {
-      runRealTerminal() {
-        console.log('WebSocket is finished');
-      },
-      errorRealTerminal() {
-        console.log('Error');
-      },
-      closeRealTerminal() {
-        console.log('Close');
-      },
-      // 根据窗口大小动态计算终端的 cols 和 rows
-      calculateColsRows() {
-        let font = this._configHelper.getFont();
-        console.log(font.charWidth)
-        const width = window.innerWidth - 230; // 减去左侧边栏的宽度
-        const height = window.innerHeight - 140; // 减去顶部的高度
-        console.log(width, height)
-        // const cols = Math.floor(width / 10);  // 每个字符宽度大约为 9px
-        // const rows = Math.floor(height / 24); // 每行高度大约为 20px
-        // font-size: 20
-        // width-px: 2300 ->170 - 180
-        // height-px: 580 -> 35 - 40
-        const cols = 170;
-        const rows = 35;
-        return { cols, rows };
-      },
-      updateTerminalSize() {
-        // 动态调整列数和行数
-        const { cols, rows } = this.calculateColsRows();
-        this.term.resize(cols, rows);
+  <div class="console" id="terminal"></div>
+</template>
+
+<script>
+import { Terminal } from 'xterm';
+import { AttachAddon } from 'xterm-addon-attach';
+import { FitAddon } from 'xterm-addon-fit';
+import 'xterm/css/xterm.css';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+
+export default {
+  name: 'ConsoleT',
+  props: {
+    terminal: {
+      type: Object,
+      required: true
+    }
+  },
+  setup() {
+    const term = ref(null);  // 使用 ref 管理 term
+    const terminalSocket = ref(null);  // 使用 ref 管理 terminalSocket
+
+    const runRealTerminal = () => {
+      console.log('WebSocket is finished');
+    };
+
+    const errorRealTerminal = () => {
+      console.log('Error');
+    };
+
+    const closeRealTerminal = () => {
+      console.log('Close');
+    };
+
+    const calculateColsRows = () => {
+      const width = window.innerWidth - 230;
+      const height = window.innerHeight - 140;
+      const cols = 170;
+      const rows = 35;
+      return { cols, rows };
+    };
+
+    const updateTerminalSize = () => {
+      const { cols, rows } = calculateColsRows();
+      if (term.value) {
+        term.value.resize(cols, rows);
         console.log(`Resized terminal to ${cols} cols and ${rows} rows.`);
       }
-    },
-    mounted() {
-      // 初始化终端
-      const { cols, rows } = this.calculateColsRows();
-  
-      this.term = new Terminal({
-        rendererType: "canvas", // 渲染类型
+    };
+
+    onMounted(() => {
+      const { cols, rows } = calculateColsRows();
+
+      // 初始化终端并赋值给 term.value
+      term.value = new Terminal({
+        rendererType: "canvas",
         fontSize: 20,
         cursorBlink: true,
+        scrollback: 5000,
         allowProposedApi: true,
         disableStdin: false,
         convertEol: true,
-        scrollback: 5000,
-        fontFamily: 'my-font-family', // 使用自定义字体
+        fontFamily: 'my-font-family',
         theme: {
-          foreground: "#58a6ff", // 字体颜色
-          background: "#2B2B2B", // 背景色
-          cursor: "Orange"       // 设置光标
+          foreground: "#58a6ff",
+          background: "#2B2B2B",
+          cursor: "Orange"
         },
-        cols: cols,  // 通过计算设置列数
-        rows: rows  // 通过计算设置行数
+        cols: cols,
+        rows: rows
       });
-  
+
       // 获取终端容器
       const terminalContainer = document.getElementById('terminal');
-      this.term.open(terminalContainer);
-  
+      term.value.open(terminalContainer);
+
       // 打开 WebSocket
-      this.terminalSocket = new WebSocket('ws://127.0.0.1:8000/terminals/');
-      this.terminalSocket.onopen = this.runRealTerminal;
-      this.terminalSocket.onclose = this.closeRealTerminal;
-      this.terminalSocket.onerror = this.errorRealTerminal;
-  
-      const attachAddon = new AttachAddon(this.terminalSocket);
-      this.term.loadAddon(attachAddon);
-  
+      terminalSocket.value = new WebSocket('ws://127.0.0.1:8000/terminals/');
+      terminalSocket.value.onopen = runRealTerminal;
+      terminalSocket.value.onclose = closeRealTerminal;
+      terminalSocket.value.onerror = errorRealTerminal;
+      terminalSocket.value.onmessage = ((event) => {
+        console.log(event.data)
+        term.value.element && term.value.focus();
+        term.value.write(event.data)
+      })
+ 
+      term.value.onData((data) => {
+        terminalSocket.value.send(JSON.stringify({
+          "type": 'cmd',
+          "msg": data
+        }))
+      })
+
+      // const attachAddon = new AttachAddon(terminalSocket.value);
+      // term.value.loadAddon(attachAddon);
+
       const fitAddon = new FitAddon();
-      this.term.loadAddon(fitAddon);
-  
+      term.value.loadAddon(fitAddon);
+
       // 初始适配终端
       fitAddon.fit();
-  
+
       // 调整终端大小
       window.addEventListener('resize', () => {
-        fitAddon.fit(); // 使用 FitAddon 来自动适配终端尺寸
-        this.updateTerminalSize(); // 根据页面大小更新 cols 和 rows
+        fitAddon.fit();
+        console.log(term.value.cols);
+        console.log(term.value.rows);
+        terminalSocket.value.send(JSON.stringify({
+          type: 'resize',
+          cols: term.value.cols,
+          rows: term.value.rows
+        }));
       });
-    },
-    beforeUnmount() {
-      // 清理 WebSocket 和终端实例
-      this.terminalSocket.close();
-      this.term.destroy();
-    }
-  };
-  </script>
-  
-  <style lang="scss">
-  @import "../assets/font.scss";  /* 确保字体被加载 */
-  </style>
-  
+    });
+
+    onBeforeUnmount(() => {
+      if (terminalSocket.value) {
+        terminalSocket.value.close();
+      }
+      if (term.value) {
+        term.value.destroy();
+      }
+    });
+
+    return {
+      term,
+      terminalSocket,
+      updateTerminalSize
+    };
+  }
+};
+</script>
+
+<style lang="scss">
+@import "../assets/font.scss";  /* 确保字体被加载 */
+
+.console {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+:deep(.xterm) {
+  padding: 5px !important;
+}
+</style>
