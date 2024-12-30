@@ -4,25 +4,23 @@
 
 <script>
 import { Terminal } from 'xterm';
-import { AttachAddon } from 'xterm-addon-attach';
 import { FitAddon } from 'xterm-addon-fit';
 import 'xterm/css/xterm.css';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 export default {
   name: 'ConsoleT',
-  props: {
-    terminal: {
-      type: Object,
-      required: true
-    }
-  },
   setup() {
     const term = ref(null);  // 使用 ref 管理 term
     const terminalSocket = ref(null);  // 使用 ref 管理 terminalSocket
 
     const runRealTerminal = () => {
       console.log('WebSocket is finished');
+      terminalSocket.value.send(JSON.stringify({
+          type: 'resize',
+          cols: term.value.cols,
+          rows: term.value.rows
+        }))
     };
 
     const errorRealTerminal = () => {
@@ -33,24 +31,7 @@ export default {
       console.log('Close');
     };
 
-    const calculateColsRows = () => {
-      const width = window.innerWidth - 230;
-      const height = window.innerHeight - 140;
-      const cols = 170;
-      const rows = 35;
-      return { cols, rows };
-    };
-
-    const updateTerminalSize = () => {
-      const { cols, rows } = calculateColsRows();
-      if (term.value) {
-        term.value.resize(cols, rows);
-        console.log(`Resized terminal to ${cols} cols and ${rows} rows.`);
-      }
-    };
-
     onMounted(() => {
-      const { cols, rows } = calculateColsRows();
 
       // 初始化终端并赋值给 term.value
       term.value = new Terminal({
@@ -67,8 +48,8 @@ export default {
           background: "#2B2B2B",
           cursor: "Orange"
         },
-        cols: cols,
-        rows: rows
+        cols: 1,
+        rows: 1
       });
 
       // 获取终端容器
@@ -76,7 +57,7 @@ export default {
       term.value.open(terminalContainer);
 
       // 打开 WebSocket
-      terminalSocket.value = new WebSocket('ws://127.0.0.1:8000/terminals/');
+      terminalSocket.value = new WebSocket('ws://127.0.0.1:8000');
       terminalSocket.value.onopen = runRealTerminal;
       terminalSocket.value.onclose = closeRealTerminal;
       terminalSocket.value.onerror = errorRealTerminal;
@@ -92,9 +73,6 @@ export default {
           "msg": data
         }))
       })
-
-      // const attachAddon = new AttachAddon(terminalSocket.value);
-      // term.value.loadAddon(attachAddon);
 
       const fitAddon = new FitAddon();
       term.value.loadAddon(fitAddon);
@@ -126,8 +104,7 @@ export default {
 
     return {
       term,
-      terminalSocket,
-      updateTerminalSize
+      terminalSocket
     };
   }
 };
