@@ -1,6 +1,6 @@
 <template>
-    <el-menu class="sidebar" default-active="/" background-color="#001529" text-color="#fff" active-text-color="#409EFF"
-        router>
+    <el-menu class="sidebar" default-active="/" background-color="#304156" text-color="#bfcbd9"
+        active-text-color="#409EFF" collapse-transition="true" mode="vertical" router>
         <!-- 概览 -->
         <el-menu-item index="/">
             <el-icon style="vertical-align: middle">
