@@ -1,9 +1,20 @@
 <template>
   <div class="app">
-    <Sidebar /> 
-    <div class="content">
-      <router-view /> 
-    </div>
+    <el-container>
+      <el-aside style="width: 220px;">
+        <Sidebar />
+      </el-aside>
+      <el-container>
+        <el-header>Header</el-header>
+        <el-main>
+          <!-- <div class="content" style="height: 100%;"> -->
+            <router-view />
+          <!-- </div> -->
+        </el-main>
+      </el-container>
+    </el-container>
+
+
   </div>
 </template>
 
@@ -20,25 +31,34 @@ export default defineComponent({
 </script>
 
 <style>
-
-body, #app {
-  background-color: #000; /* 设置背景为黑色 */
-  color: white; /* 确保文字颜色为白色可见 */
+body,
+#app {
+  /* background-color: #000; */
+  /* 设置背景为黑色 */
+  color: white;
+  /* 确保文字颜色为白色可见 */
   margin: 0;
-  height: 100vh; /* 占满视口高度 */
+  height: 100vh;
+  /* 占满视口高度 */
 }
 
 .app {
-  display: flex; /* 设置主布局为flex */
-  height: 100vh; /* 让内容填满视口高度 */
+  display: flex;
+  /* 设置主布局为flex */
+  height: 100vh;
+  /* 让内容填满视口高度 */
   overflow: hidden;
-  background-color: black;
+  /* background-color: black; */
 }
 
 .content {
-  flex: 1; /* 主内容区域占满剩余空间 */
-  padding: 20px; /* 内容区域内边距 */
-  overflow-y: auto; /* 让内容可以滚动 */
-  background-color: #f5f5f5; /* 主内容背景色 */
+  flex: 1;
+  /* 主内容区域占满剩余空间 */
+  padding: 20px;
+  /* 内容区域内边距 */
+  overflow-y: auto;
+  /* 让内容可以滚动 */
+  background-color: #f5f5f5;
+  /* 主内容背景色 */
 }
 </style>
