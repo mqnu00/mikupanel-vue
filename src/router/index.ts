@@ -18,7 +18,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/terminal',
     name: 'terminal',
-    component: () => import(/* webpackChunkName: "about" */ '../components/ConsoleT.vue')
+    component: () => import(/* webpackChunkName: "about" */ '../components/ConsoleTs.vue')
   }
 ]
 
