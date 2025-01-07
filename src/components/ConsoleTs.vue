@@ -60,7 +60,7 @@ export default {
 
     // 初始化一个 Terminal 实例
     const initTerm = (label: string) => {
-      terminals.value[label] = null
+      terminals.value[label] = new Terminal()
       nextTick(() => {
         // 确保 DOM 渲染完成后再创建 terminal
         const term = new Terminal({
@@ -197,7 +197,7 @@ export default {
     onBeforeUnmount(() => {
       // 清理 WebSocket 和终端实例
       Object.keys(terminalSockets.value).forEach((label) => terminalSockets.value[label].close());
-      Object.keys(terminals.value).forEach((label) => terminals.value[label].destroy());
+      Object.keys(terminals.value).forEach((label) => terminals.value[label].dispose());
     });
 
     return {
