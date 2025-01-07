@@ -53,18 +53,36 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.sidebar {
+
+.el-menu {
+    border-radius: 4px;
+        background-color: rgba(0, 94, 235, 0.1);
+        margin: 6px 0;
+        height: 46px;
+        box-shadow: 0px 0px 4px rgba(0, 94, 235, 0.1);
+        box-sizing: border-box;
+}
+/* .sidebar {
     height: 100vh;
     width: 220px;
     background-color: #001529;
     color: white;
-}
+} */
 
 .el-icon {
     font-size: 16px;
     /* 控制图标大小 */
     margin-right: 10px;
     /* 图标和文字间距 */
+}
+
+.el-menu-item {
+    border-radius: 4px;
+    background-color: rgba(0, 94, 235, 0.1);
+    margin: 6px 0;
+    height: 46px;
+    box-shadow: 0px 0px 4px rgba(0, 94, 235, 0.1);
+    box-sizing: border-box;
 }
 
 .el-menu-item.is-active>.el-icon {
@@ -75,12 +93,22 @@ export default defineComponent({
 
 /* Active menu item style */
 .el-menu-item.is-active {
-    background-color: rgba(64, 158, 255, 0.2) !important;
+    background-color: rgba(64, 158, 255, 0.2);
     /* Light blue background */
-    border-left: 4px solid #409EFF !important;
+    /* border-left: 4px solid #409EFF; */
     /* Blue left border */
-    color: #409EFF !important;
+    color: #409EFF;
     /* Text color */
     font-weight: bold;
+}
+
+.el-menu-item.is-active::before {
+    position: absolute;
+    border-radius: 4px;
+    left: 12px;
+    width: 4px;
+    height: 14px;
+    content: '';
+    background: rgba(64, 158, 255, 0.2);
 }
 </style>
