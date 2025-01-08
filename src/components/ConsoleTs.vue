@@ -45,6 +45,7 @@ export default {
     };
 
     // 初始化一个 Terminal 实例
+    // TODO 修改nextTick时机
     const initTerm = (label: string) => {
       terminals.value[label] = new Terminal()
       nextTick(() => {
@@ -137,8 +138,8 @@ export default {
         }
       };
 
+      // TODO terminal communication 文档
       socket.value.onmessage = (event: any) => {
-        console.log('Received data from server:', event.data);
         if (event.data) {
           let info = JSON.parse(event.data)
           if (info["do_return"] === 'create') {
@@ -157,6 +158,7 @@ export default {
             let uid = info["data"]["uid"]
             terminals.value[uid].write(msg);  // 将数据写入终端
           } else if (info["do_return"] === 'delete') {
+            // TODO terminal delete 顺序设置
             let uid = info["data"]["uid"]
             removeTerminal(uid)
           }
