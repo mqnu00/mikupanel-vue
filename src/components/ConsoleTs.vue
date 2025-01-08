@@ -1,5 +1,6 @@
 <template>
-  <el-tabs v-model="activeTab" type="card" tab-position="top" style="width: 100%; height: 100%;">
+  <el-tabs v-model="activeTab" type="card" tab-position="top" style="width: 100%; height: 100%;" editable
+    @edit="handleTabsEdit" @tab-click="handleTabClick">
     <!-- 默认有一个 Terminal，后续可以动态增加 -->
     <el-tab-pane v-for="(term, label) in terminals" :key="label" :label="label" :name="label" class="console"
       style="height: 100%; width: 100%;">
@@ -7,18 +8,13 @@
       <div class="console" :ref="(el) => consoleContainers[label] = el" style="height: 100%; width: 100%;"></div>
     </el-tab-pane>
   </el-tabs>
-  <!-- 删除按钮 -->
-  <el-button type="danger" @click="removeTerminal(activeTab)" class="delete-btn">
-    删除
-  </el-button>
-  <el-button type="primary" @click="addTerminal">添加终端</el-button>
 </template>
 
 <script lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick, toRaw, watch } from 'vue';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
-import { ElTabs, ElTabPane, ElButton } from 'element-plus';
+import { ElTabs, ElTabPane, TabPaneName } from 'element-plus';
 import 'xterm/css/xterm.css';
 import 'element-plus/dist/index.css';
 import { assert } from 'console';
@@ -27,8 +23,7 @@ export default {
   name: 'ConsoleT',
   components: {
     ElTabs,
-    ElTabPane,
-    ElButton
+    ElTabPane
   },
   setup() {
     const activeTab = ref<string>('');  // 当前选中的标签
@@ -83,16 +78,16 @@ export default {
           term.open(terminalContainer);
           fitAddon.fit(); // 调整终端适配
           socket.value?.send(JSON.stringify({
-              do: "send",
-              data: {
-                uid: label,
-                msg: {
-                  type: 'resize',
-                  cols: term.cols,
-                  rows: term.rows
-                }
+            do: "send",
+            data: {
+              uid: label,
+              msg: {
+                type: 'resize',
+                cols: term.cols,
+                rows: term.rows
               }
-            }))
+            }
+          }))
         }
 
         // 监听终端输入并通过 WebSocket 发送数据
@@ -111,23 +106,7 @@ export default {
           );
         });
 
-        // 调整终端大小时重新适配
-        window.addEventListener('resize', () => {
-          fitAddon.fit();
-          socket.value?.send(
-            JSON.stringify({
-              do: "send",
-              data: {
-                uid: label,
-                msg: {
-                  type: 'resize',
-                  cols: term.cols,
-                  rows: term.rows
-                }
-              }
-            })
-          );
-        });
+
       });
     };
 
@@ -188,11 +167,54 @@ export default {
       return socket
     };
 
+    const resizeTerminal = (label: string) => {
+      fitAddons.value[label].fit();
+      socket.value?.send(
+        JSON.stringify({
+          do: "send",
+          data: {
+            uid: label,
+            msg: {
+              type: 'resize',
+              cols: terminals.value[label].cols,
+              rows: terminals.value[label].rows
+            }
+          }
+        })
+      );
+    }
+
+    const handleTabClick = (tab: { paneName: string }) => {
+      setTimeout(() => {
+        resizeTerminal(tab.paneName)
+      }, 100)
+    }
+
     // 默认初始化一个终端
     onMounted(() => {
       setupTerminalSocket();
       // addTerminal()
+      // 调整终端大小时重新适配
+      window.addEventListener('resize', () => {
+
+        resizeTerminal(activeTab.value)
+
+
+      });
     });
+
+    const handleTabsEdit = (
+      targetName: TabPaneName | undefined,
+      action: 'remove' | 'add'
+    ) => {
+      console.log(targetName)
+      if (action === 'add') {
+        addTerminal()
+      } else if (action === 'remove') {
+        removeTerminal(activeTab.value)
+      }
+
+    }
 
     // 动态添加终端
     const addTerminal = () => {
@@ -213,7 +235,11 @@ export default {
 
     // 删除指定的终端
     const removeTerminal = (label: string) => {
-      terminals.value[label].dispose()  // 销毁终端实例
+      console.log(label)
+      if (terminals.value[label]) {
+        terminals.value[label].dispose()  // 销毁终端实例
+      }
+
       // socket.value.close();  // 关闭 WebSocket 连接
       delete terminals.value[label];  // 移除终端
       delete fitAddons.value[label];  // 移除 FitAddon
@@ -241,12 +267,15 @@ export default {
       // 清理 WebSocket 和终端实例
       socket.value?.close()
       Object.keys(terminals.value).forEach((label) => terminals.value[label].dispose());
+
     });
 
     return {
       activeTab,
       terminals,
       addTerminal,
+      handleTabsEdit,
+      handleTabClick,
       removeTerminal,
       consoleContainers  // 不再需要直接返回，$refs 存储的动态 ref 会管理容器
     };
