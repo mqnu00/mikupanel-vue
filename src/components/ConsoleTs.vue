@@ -77,18 +77,7 @@ export default {
         const terminalContainer = toRaw(consoleContainers.value)[label];
         if (terminalContainer) {
           term.open(terminalContainer);
-          fitAddon.fit(); // 调整终端适配
-          socket.value?.send(JSON.stringify({
-            do: "send",
-            data: {
-              uid: label,
-              msg: {
-                type: 'resize',
-                cols: term.cols,
-                rows: term.rows
-              }
-            }
-          }))
+          resizeTerminal(label)
         }
 
         // 监听终端输入并通过 WebSocket 发送数据
@@ -145,22 +134,29 @@ export default {
           if (info["do_return"] === 'create') {
             let uid = info["data"]["uid"]
             initTerm(uid)
-            socket.value?.send(
-              JSON.stringify({
-                type: 'resize',
-                cols: terminals.value[uid].cols,
-                rows: terminals.value[uid].rows
-              })
-            );
             activeTab.value = uid
           } else if (info["do_return"] === 'send') {
             let msg = info["data"]["msg"]
             let uid = info["data"]["uid"]
             terminals.value[uid].write(msg);  // 将数据写入终端
           } else if (info["do_return"] === 'delete') {
-            // TODO terminal delete 顺序设置
             let uid = info["data"]["uid"]
-            removeTerminal(uid)
+            if (terminals.value[uid]) {
+              terminals.value[uid].dispose()  // 销毁终端实例
+            }
+
+            // socket.value.close();  // 关闭 WebSocket 连接
+            delete terminals.value[uid];  // 移除终端
+            delete fitAddons.value[uid];  // 移除 FitAddon
+
+            // 如果删除的是当前选中的终端，需要激活其他终端
+            if (activeTab.value === uid) {
+              if (Object.keys(terminals.value).length > 0) {
+                activeTab.value = Object.keys(terminals.value)[0];  // 激活第一个 terminal
+              } else {
+                activeTab.value = '';  // 如果没有终端，清空选中的 tab
+              }
+            }
           }
           console.log(info)
 
@@ -238,13 +234,7 @@ export default {
     // 删除指定的终端
     const removeTerminal = (label: string) => {
       console.log(label)
-      if (terminals.value[label]) {
-        terminals.value[label].dispose()  // 销毁终端实例
-      }
 
-      // socket.value.close();  // 关闭 WebSocket 连接
-      delete terminals.value[label];  // 移除终端
-      delete fitAddons.value[label];  // 移除 FitAddon
 
       socket.value?.send(
         JSON.stringify({
@@ -255,14 +245,7 @@ export default {
         })
       )
 
-      // 如果删除的是当前选中的终端，需要激活其他终端
-      if (activeTab.value === label) {
-        if (Object.keys(terminals.value).length > 0) {
-          activeTab.value = Object.keys(terminals.value)[0];  // 激活第一个 terminal
-        } else {
-          activeTab.value = '';  // 如果没有终端，清空选中的 tab
-        }
-      }
+
     };
 
     onBeforeUnmount(() => {
