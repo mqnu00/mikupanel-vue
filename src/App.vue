@@ -5,7 +5,7 @@
         <Sidebar />
       </el-aside>
       <el-container>
-        <el-header>Header</el-header>
+        
         <el-main>
           <!-- <div class="content" style="height: 100%;"> -->
             <router-view />
