@@ -1,5 +1,5 @@
 <template>
-  <el-tabs v-model="activeTab" type="card" tab-position="top" style="width: 100%; height: 100%;" editable
+  <el-tabs v-model="activeTab" type="border-card" tab-position="top" style="width: 100%; height: 100%;" editable
     @edit="handleTabsEdit" @tab-click="handleTabClick">
     <!-- 默认有一个 Terminal，后续可以动态增加 -->
     <el-tab-pane v-for="(term, label) in terminals" :key="label" :label="label" :name="label" class="console"
@@ -18,6 +18,7 @@ import { ElTabs, ElTabPane, TabPaneName } from 'element-plus';
 import 'xterm/css/xterm.css';
 import 'element-plus/dist/index.css';
 import { assert } from 'console';
+import { resolve } from 'path';
 
 export default {
   name: 'ConsoleT',
@@ -158,28 +159,29 @@ export default {
               }
             }
           }
-          console.log(info)
 
         }
       };
       return socket
     };
 
-    const resizeTerminal = (label: string) => {
+    const resizeTerminal = async (label: string) => {
       fitAddons.value[label].fit();
-      socket.value?.send(
-        JSON.stringify({
-          do: "send",
-          data: {
-            uid: label,
-            msg: {
-              type: 'resize',
-              cols: terminals.value[label].cols,
-              rows: terminals.value[label].rows
+      await new Promise((resolve) => {
+        socket.value?.send(
+          JSON.stringify({
+            do: "send",
+            data: {
+              uid: label,
+              msg: {
+                type: 'resize',
+                cols: terminals.value[label].cols,
+                rows: terminals.value[label].rows
+              }
             }
-          }
-        })
-      );
+          })
+        );
+      })
     }
 
     const handleTabClick = (tab: { paneName: string }) => {
