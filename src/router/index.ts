@@ -8,6 +8,11 @@ const routes: Array<RouteRecordRaw> = [
     component: SysInfo
   },
   {
+    path: '/user',
+    name: 'user',
+    component: import(/* webpackChunkName: "about" */ '../views/LoginUser.vue')
+  },
+  {
     path: '/about',
     name: 'about',
     // route level code-splitting
