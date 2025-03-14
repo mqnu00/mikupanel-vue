@@ -7,6 +7,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Terminal',
     component: () => import('../views/terminal/TerminalView.vue')
   },
+  {
+    path: '/file',
+    name: 'FileManager',
+    component: () => import('../views/fileManager/FileManager.vue')
+  },
 //   {
 //     path: '/',
 //     name: 'Home',
