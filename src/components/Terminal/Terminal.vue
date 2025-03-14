@@ -1,6 +1,6 @@
 <template>
   <!-- <p>{{ name }}</p> -->
-      <div ref="terminalContainer" class="xterm" style="height: calc(100vh - 80px - 30px - 50px);"></div>
+      <div ref="terminalContainer" class="xterm" style="height: calc(100vh - 80px - 30px - 50px); width: 100%;"></div>
     <!-- <textarea></textarea> -->
   </template>
   
