@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "skipLibCheck": true, // 跳过库文件的类型检查
     "target": "ESNext",
     "jsx": "preserve",
     "jsxImportSource": "vue",
