@@ -60,118 +60,79 @@ import {
 } from "@vicons/ionicons5";
 import { NIcon } from "naive-ui";
 import { defineComponent, h, ref } from "vue";
+import {LayoutClient} from "./LayoutClient"
 
 function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) });
 }
 
-const menuOptions: MenuOption[] = [
-  {
-    label: "且听风吟",
-    key: "hear-the-wind-sing",
-    icon: renderIcon(BookIcon),
-  },
-  {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            path: '/terminal'
-          }
-        },
-        { default: () => '终端' }
-      ),
-    key: 'go-to-work',
-    icon: renderIcon(BookIcon)
-  },
-  {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            path: '/file'
-          }
-        },
-        { default: () => '文件管理' }
-      ),
-    key: 'go-to-file',
-    icon: renderIcon(BookIcon)
-  },
-  {
-    label: "1973年的弹珠玩具",
-    key: "pinball-1973",
-    icon: renderIcon(BookIcon),
-    disabled: true,
-    children: [
-      {
-        label: "鼠",
-        key: "rat",
-      },
-    ],
-  },
-  {
-    label: "寻羊冒险记",
-    key: "a-wild-sheep-chase",
-    disabled: true,
-    icon: renderIcon(BookIcon),
-  },
-  {
-    label: "舞，舞，舞",
-    key: "dance-dance-dance",
-    icon: renderIcon(BookIcon),
-    children: [
-      {
-        type: "group",
-        label: "人物",
-        key: "people",
-        children: [
-          {
-            label: "叙事者",
-            key: "narrator",
-            icon: renderIcon(PersonIcon),
-          },
-          {
-            label: "羊男",
-            key: "sheep-man",
-            icon: renderIcon(PersonIcon),
-          },
-        ],
-      },
-      {
-        label: "饮品",
-        key: "beverage",
-        icon: renderIcon(WineIcon),
-        children: [
-          {
-            label: "威士忌",
-            key: "whisky",
-          },
-        ],
-      },
-      {
-        label: "食物",
-        key: "food",
-        children: [
-          {
-            label: "三明治",
-            key: "sandwich",
-          },
-        ],
-      },
-      {
-        label: "过去增多，未来减少",
-        key: "the-past-increases-the-future-recedes",
-      },
-    ],
-  },
-];
+// const menuOptions: MenuOption[] = [
+//   {
+//     label: () =>
+//       h(
+//         RouterLink,
+//         {
+//           to: {
+//             path: '/terminal'
+//           }
+//         },
+//         { default: () => '终端' }
+//       ),
+//     key: 'go-to-work',
+//     icon: renderIcon(BookIcon)
+//   },
+//   {
+//     label: () =>
+//       h(
+//         RouterLink,
+//         {
+//           to: {
+//             path: '/file'
+//           }
+//         },
+//         { default: () => '文件管理' }
+//       ),
+//     key: 'go-to-file',
+//     icon: renderIcon(BookIcon)
+//   },
+//   {
+//     label: () =>
+//       h(
+//         RouterLink,
+//         {
+//           to: {
+//             path: '/about'
+//           }
+//         },
+//         { default: () => 'about' }
+//       ),
+//     key: 'go-to-about',
+//     icon: renderIcon(BookIcon)
+//   },
+//   {
+//     label: () =>
+//       h(
+//         RouterLink,
+//         {
+//           to: {
+//             path: '/test'
+//           }
+//         },
+//         { default: () => 'test' }
+//       ),
+//     key: 'go-to-test',
+//     icon: renderIcon(BookIcon)
+//   },
+// ];
 
 export default defineComponent({
   setup() {
     const collapsed = ref(false);
     const activeKey = ref<string | null>(null);
+    const menuOptions = ref<MenuOption[]>([])
+    const layoutClient = ref<LayoutClient>(new LayoutClient())
+
+    layoutClient.value.init(menuOptions)
 
     function toggleCollapsed() {
       collapsed.value = !collapsed.value;
