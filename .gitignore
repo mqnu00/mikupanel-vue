@@ -11,7 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
-
+# 编译生成文件
+./scripts
+./src/plugins
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
