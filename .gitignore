@@ -12,8 +12,8 @@ dist
 dist-ssr
 *.local
 # 编译生成文件
-./scripts
-./src/plugins
+../scripts
+/plugins
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
