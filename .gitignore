@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 # 编译生成文件
-../scripts
+src/plugins
 /plugins
 # Editor directories and files
 .vscode/*
@@ -24,3 +24,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
