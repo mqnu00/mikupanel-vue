@@ -3,20 +3,11 @@
   <n-layout has-sider style="width: 100vw; height: 100vh; position: relative;">
     <n-layout-sider
       bordered
-      collapse-mode="width"
-      :collapsed-width="64"
       :width="240"
-      :collapsed="collapsed"
-      show-trigger
-      @collapse="collapsed = true"
-      @expand="collapsed = false"
       style="height: 100vh; position: absolute; left: 0; top: 0;"
     >
       <n-menu
         v-model:value="activeKey"
-        :collapsed="collapsed"
-        :collapsed-width="64"
-        :collapsed-icon-size="22"
         :options="menuOptions"
       />
     </n-layout-sider>
@@ -66,77 +57,13 @@ function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) });
 }
 
-// const menuOptions: MenuOption[] = [
-//   {
-//     label: () =>
-//       h(
-//         RouterLink,
-//         {
-//           to: {
-//             path: '/terminal'
-//           }
-//         },
-//         { default: () => '终端' }
-//       ),
-//     key: 'go-to-work',
-//     icon: renderIcon(BookIcon)
-//   },
-//   {
-//     label: () =>
-//       h(
-//         RouterLink,
-//         {
-//           to: {
-//             path: '/file'
-//           }
-//         },
-//         { default: () => '文件管理' }
-//       ),
-//     key: 'go-to-file',
-//     icon: renderIcon(BookIcon)
-//   },
-//   {
-//     label: () =>
-//       h(
-//         RouterLink,
-//         {
-//           to: {
-//             path: '/about'
-//           }
-//         },
-//         { default: () => 'about' }
-//       ),
-//     key: 'go-to-about',
-//     icon: renderIcon(BookIcon)
-//   },
-//   {
-//     label: () =>
-//       h(
-//         RouterLink,
-//         {
-//           to: {
-//             path: '/test'
-//           }
-//         },
-//         { default: () => 'test' }
-//       ),
-//     key: 'go-to-test',
-//     icon: renderIcon(BookIcon)
-//   },
-// ];
-
 export default defineComponent({
   setup() {
-    const collapsed = ref(false);
     const activeKey = ref<string | null>(null);
     const menuOptions = ref<MenuOption[]>([])
     const layoutClient = ref<LayoutClient>(new LayoutClient())
 
     layoutClient.value.init(menuOptions)
-
-    function toggleCollapsed() {
-      collapsed.value = !collapsed.value;
-    }
 
     function goHome() {
       console.log("返回首页");
@@ -145,11 +72,9 @@ export default defineComponent({
     }
 
     return {
-      collapsed,
       activeKey,
       menuOptions,
       renderIcon,
-      toggleCollapsed,
       goHome,
       ExpandIcon,
       CollapseIcon,
