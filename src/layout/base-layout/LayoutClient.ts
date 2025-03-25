@@ -9,6 +9,7 @@ import {
     ChevronBackOutline as CollapseIcon,
     HomeOutline as HomeIcon,
   } from "@vicons/ionicons5";
+import { generateDynamicRoutes } from "@/router/dynamicRoutes";
 
 function renderIcon(icon: Component) {
     return () => h(NIcon, null, { default: () => h(icon) });
@@ -37,23 +38,27 @@ export class LayoutClient extends BaseWebsocket {
             if (msg.data) {
                 const info: any[] = JSON.parse(msg.data)
                 console.log(info)
+                const routerItems = []
+                this.menuOptions = []
                 for (const i in info) {
-                  console.log(i)
+                    console.log(i)
                     this.menuOptions.push({
                         label: () =>
                                   h(
                                     RouterLink,
                                     {
                                       to: {
-                                        path: info[i].path
+                                        path: info[i].menu.path
                                       }
                                     },
-                                    { default: () => info[i].label }
+                                    { default: () => info[i].menu.label }
                                   ),
-                                key: info[i].key,
-                                icon: renderIcon(BookIcon)
+                                key: info[i].menu.key,
+                                // icon: renderIcon(BookIcon)
                     })
+                    routerItems.push(info[i].router)
                 }
+                generateDynamicRoutes(routerItems)
             }
         }
     }

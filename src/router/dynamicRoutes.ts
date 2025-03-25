@@ -28,6 +28,10 @@ export const generateDynamicRoutes = (menuData: any[]) => {
     });
   };
 
+  router.getRoutes().forEach(route => {
+    router.removeRoute(route.name as string);
+  });
+
   dynamicRoutes.push(...processRoutes(menuData));
 
   routeStore.setDynamicRoutes(dynamicRoutes); // 存储到 Pinia 状态管理中
@@ -36,5 +40,5 @@ export const generateDynamicRoutes = (menuData: any[]) => {
     console.log(router.getRoutes()); // 打印当前路由列表
   }); // 动态添加到路由实例中
   // 强制刷新路由
-router.push(router.currentRoute.value.path);
+// router.push(router.currentRoute.value.path);
 };

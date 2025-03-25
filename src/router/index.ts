@@ -71,5 +71,5 @@ const initDynamicRoutes = () => {
     }
   }
 };
-initDynamicRoutes()
+// initDynamicRoutes()
 export default router;
