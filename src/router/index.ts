@@ -30,21 +30,17 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import { generateDynamicRoutes } from './dynamicRoutes';
 
-const routes: RouteRecordRaw[] =  [
-    {
-      path: '/terminal',
-      name: 'Terminal',
-      component: () => import('../views/terminal/TerminalView.vue')
-    },
-    {
-      path: '/file',
-      name: 'FileManager',
-      component: () => import('../views/fileManager/FileManager.vue')
-    },
+export const routes: RouteRecordRaw[] =  [
+
     {
       path: '/test',
       name: 'Test',
-      component: () => import('../../dist/plugins/FileManager/FileManager.js')
+      component: () => import('../../dist/plugins/DockerManager/DockerManager.js')
+    },
+    {
+      path: '/terminal',
+      name: 'Terminal',
+      component: () => import('@/views/terminal/TerminalView.vue')
     },
   //   {
   //     path: '/',

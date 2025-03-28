@@ -38,6 +38,7 @@
 </template>
 
 <script lang="ts">
+import "../../../plugins/test.js"
 import { RouterLink } from 'vue-router';
 import type { MenuOption } from "naive-ui";
 import type { Component } from "vue";
@@ -70,6 +71,10 @@ export default defineComponent({
       // 可以在这里添加路由跳转逻辑，例如：
       // this.$router.push("/");
     }
+
+    onUnmounted(() => {
+      layoutClient.value.close()
+    })
 
     return {
       activeKey,

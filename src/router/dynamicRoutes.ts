@@ -1,13 +1,13 @@
 // src/router/dynamicRoutes.ts
-import router from './index';
-import { useRouteStore } from '@/store/useRouteStore';
+import router, { routes } from './index';
+import { useComponentConfigStore } from '@/store/useComponentConfigStore';
 import type { RouteRecordRaw } from 'vue-router';
 import { defineAsyncComponent } from 'vue';
 
 
 
 export const generateDynamicRoutes = (menuData: any[]) => {
-  const routeStore = useRouteStore();
+  const routeStore = useComponentConfigStore();
   const dynamicRoutes: RouteRecordRaw[] = [];
 
   const modules = import.meta.glob('@/plugins/*.vue')
@@ -34,11 +34,16 @@ export const generateDynamicRoutes = (menuData: any[]) => {
 
   dynamicRoutes.push(...processRoutes(menuData));
 
-  routeStore.setDynamicRoutes(dynamicRoutes); // 存储到 Pinia 状态管理中
+   // 存储到 Pinia 状态管理中
+  // routeStore.setDynamicRoutes(dynamicRoutes);
   dynamicRoutes.forEach((route) => {
     router.addRoute(route)
-    console.log(router.getRoutes()); // 打印当前路由列表
+    
   }); // 动态添加到路由实例中
+  routes.forEach((route) => {
+    router.addRoute(route)
+  })
+  console.log(router.getRoutes()); // 打印当前路由列表
   // 强制刷新路由
 // router.push(router.currentRoute.value.path);
 };

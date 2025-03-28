@@ -10,6 +10,7 @@ import {
     HomeOutline as HomeIcon,
   } from "@vicons/ionicons5";
 import { generateDynamicRoutes } from "@/router/dynamicRoutes";
+import { useComponentConfigStore } from "@/store/useComponentConfigStore";
 
 function renderIcon(icon: Component) {
     return () => h(NIcon, null, { default: () => h(icon) });
@@ -20,12 +21,13 @@ export class LayoutClient extends BaseWebsocket {
     public menuOptions: any
 
     constructor () {
-
+        
         super()
 
     }
 
     public init(menuOptions: any) {
+      const componentConfigStore = useComponentConfigStore()
         this.menuOptions = menuOptions
         this.socket.onopen = () => {
             this.wsSend({
@@ -39,7 +41,34 @@ export class LayoutClient extends BaseWebsocket {
                 const info: any[] = JSON.parse(msg.data)
                 console.log(info)
                 const routerItems = []
-                this.menuOptions = []
+                this.menuOptions = [
+                  {
+                    label: () =>
+                      h(
+                        RouterLink,
+                        {
+                          to: {
+                            path: "/test"
+                          }
+                        },
+                        { default: () => "test" }
+                      ),
+                    key: "test",
+                  },
+                  {
+                    label: () =>
+                      h(
+                        RouterLink,
+                        {
+                          to: {
+                            path: "/terminal"
+                          }
+                        },
+                        { default: () => "terminal" }
+                      ),
+                    key: "terminal",
+                  },
+                ]
                 for (const i in info) {
                     console.log(i)
                     this.menuOptions.push({
@@ -59,7 +88,14 @@ export class LayoutClient extends BaseWebsocket {
                     routerItems.push(info[i].router)
                 }
                 generateDynamicRoutes(routerItems)
+                componentConfigStore.setComponentConfig(info)
             }
         }
+    }
+
+    public close = () => {
+      this.wsSend({
+        do: "close"
+      })
     }
 }
