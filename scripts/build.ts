@@ -10,7 +10,7 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path';
 import Components from 'unplugin-vue-components/vite';
 import { NaiveUiResolver, ElementPlusResolver } from 'unplugin-vue-components/resolvers';
-
+import terser from '@rollup/plugin-terser';
 import AutoImport from "unplugin-auto-import/vite";
 import Icons from "unplugin-icons/vite";
 import IconsResolver from "unplugin-icons/resolver";
@@ -128,10 +128,27 @@ async function buildComponent(inputPath: string) {
             autoInstall: true,
             compiler: 'vue3'
           }),
+          terser({
+            compress: {
+              // 禁止将变量名压缩为 'h'
+              pure_getters: true,
+              keep_fargs: false,
+              keep_fnames: true,
+              keep_classnames: true,
+              keep_infinity: true,
+              passes: 2,
+              // 自定义保留的变量名
+            },
+            mangle: {
+              // 禁止变量名被替换为 'h'
+              reserved: ['h']
+            }
+          }),
       replace({
         'process.env.NODE_ENV': JSON.stringify('production'),
         preventAssignment: true
       }),
+      
       addImportToComponent(componentName)
     ],
     resolve: {
@@ -149,10 +166,13 @@ async function buildComponent(inputPath: string) {
         fileName: () => path.basename(outputPath)
       },
       rollupOptions: {
-        external: ['vue'], // 不将 Vue 标记为外部依赖
+        external: ['vue', 'vue-router', 'pinia'], // 不将 Vue 标记为外部依赖
         output: {
           dir: path.dirname(outputPath),
-          globals: {}
+          // 禁止变量提升到全局
+          hoistTransitiveImports: false,
+          globals: {
+          }
         }
       }
     }
