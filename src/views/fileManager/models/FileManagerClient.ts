@@ -30,6 +30,7 @@ export class FileManagerClient {
     public fileContent: any
     public breadcrumbItems: any
     public nowInputPath: any
+    public dataLoaded: any
 
     constructor() {
         this.socket = new WebSocket(import.meta.env.VITE_API_BASE_WS_URL)
@@ -50,12 +51,13 @@ export class FileManagerClient {
         }
     }
 
-    public init(tableData: any, nowPath: any, nowInputPath: any, fileContent: any, breadcrumbItems: any): void {
+    public init(tableData: any, nowPath: any, nowInputPath: any, fileContent: any, breadcrumbItems: any, dataLoaded: any): void {
         this.tableData = tableData
         this.nowPath = nowPath
         this.nowInputPath = nowInputPath
         this.fileContent = fileContent
         this.breadcrumbItems = breadcrumbItems
+        this.dataLoaded = dataLoaded
         this.socket.onopen = () => {
             console.log('file create')
             this.wsSend({
@@ -77,6 +79,7 @@ export class FileManagerClient {
                     this.breadcrumbItems = ['/'].concat(
                         (this.nowPath as string).split('/').filter((part) => part.length > 0)
                     )
+                    this.dataLoaded = true
                 } else if (info["do_return"] === 'openFile') {
                     this.fileContent = info["data"]["content"]
                 } else if (info["do_return"] === 'saveFile') {

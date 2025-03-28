@@ -1,5 +1,5 @@
 <template>
-    <n-layout style="width: 100%; height: 100%; position: relative;">
+    <n-layout v-if="dataLoaded" style="width: 100%; height: 100%; position: relative;">
         <!-- 固定在顶部的 n-layout-header -->
         <n-layout-header class="header" style="position: absolute; top: 0; left: 0; right: 0; height: 60px;">
             <n-space>
@@ -84,6 +84,7 @@ export default defineComponent({
             dirtype: 'file'
         });
         const inputRef = ref<HTMLElement | null>(null)
+        const dataLoaded = ref(false)
 
         const formatTimestamp = (row: any, column: any) => {
             const timestamp = row[column.property];
@@ -146,7 +147,7 @@ export default defineComponent({
         );
 
         fileManagerClient.value = new FileManagerClient();
-        fileManagerClient.value?.init(tableData, nowPath, nowInputPath, fileContent, breadcrumbItems);
+        fileManagerClient.value?.init(tableData, nowPath, nowInputPath, fileContent, breadcrumbItems, dataLoaded);
 
         const dirnameClick = (p: Path) => {
             if (p.dirtype === 'file') {
@@ -190,6 +191,7 @@ export default defineComponent({
             breadcrumbItems,
             inputRef,
             nowInputPath,
+            dataLoaded,
             dirnameClick,
             dirBack,
             dialogClose,

@@ -17,7 +17,7 @@
 <script lang="ts">
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import { onMounted, onBeforeUnmount, defineComponent, PropType } from 'vue';
-import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
+import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution.js';
 import { FileManagerClient, Path, path_concat } from './FileManagerClient';
 export default defineComponent({
     name: 'FileEditor',
