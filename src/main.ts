@@ -3,6 +3,7 @@ import './style.css'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
+import 'element-plus/dist/index.css';
 import {create as createNaiveUI} from 'naive-ui'
 import { LogoAppleAppstore } from '@vicons/ionicons5'
 

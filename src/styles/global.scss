@@ -1,14 +1,20 @@
 /* src/styles/global.scss */
 @font-face {
-    font-family: 'FiraCode'; /* 自定义字体名称 */
-    font-weight: normal;
-    font-style: normal;
-    src: 
-      url('/src/assets/fonts/FiraCodeNerdFontMono-Medium.ttf') ;
-    
-  }
+  font-family: 'FiraCode';
+  /* 自定义字体名称 */
+  font-weight: normal;
+  font-style: normal;
+  src:
+    url('/src/assets/fonts/FiraCodeNerdFontMono-Medium.ttf');
 
-  .xterm {
-    font-family: 'FiraCode';
-    margin: 5px;
-  }
+}
+
+.xterm {
+  font-family: 'FiraCode';
+  margin: 5px;
+}
+
+/* 解决按钮黑边框bug */
+.el-button:focus {
+  outline: none;
+}

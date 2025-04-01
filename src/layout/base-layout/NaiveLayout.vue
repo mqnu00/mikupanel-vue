@@ -30,7 +30,7 @@
       </n-layout-header>
 
       <!-- 内容区域 -->
-      <div style="position: absolute; top: 60px; left: 0; right: 0; bottom: 0; overflow: auto;">
+      <div style="padding: 10px; position: absolute; top: 60px; left: 0; right: 0; bottom: 0; overflow: auto;">
         <router-view></router-view>
       </div>
     </n-layout>
