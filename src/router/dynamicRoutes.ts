@@ -44,6 +44,8 @@ export const generateDynamicRoutes = (menuData: any[]) => {
     router.addRoute(route)
   })
   console.log(router.getRoutes()); // 打印当前路由列表
+  // 重新导航到当前路由
+router.replace(router.currentRoute.value.fullPath);
   // 强制刷新路由
 // router.push(router.currentRoute.value.path);
 };

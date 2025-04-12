@@ -1,3 +1,4 @@
+import { useUserStore } from "@/store/useUserStore";
 import { BaseWebsocket } from "@/utils/BackendConnect";
 
 export class UserClient extends BaseWebsocket {
@@ -7,6 +8,7 @@ export class UserClient extends BaseWebsocket {
     }
 
     public init() {
+        const userStore = useUserStore()
         this.socket.onopen = () => {
             this.wsSend({
                 type: 'run',
@@ -15,8 +17,11 @@ export class UserClient extends BaseWebsocket {
                 component: 'user'
             })
         }
-        this.socket.onmessage = (data: any) => {
-
+        this.socket.onmessage = (ev: any) => {
+            if (ev) {
+                const info = ev.data
+                userStore.setToken(info)
+            }
         }
     }
 
@@ -24,12 +29,6 @@ export class UserClient extends BaseWebsocket {
         this.wsSend({
             username: username,
             password: password
-        })
-    }
-
-    public close() {
-        this.wsSend({
-            username: null
         })
     }
 }

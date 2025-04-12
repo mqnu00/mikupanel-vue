@@ -19,6 +19,12 @@ export class BaseWebsocket {
             this.socket.send(JSON.stringify(msg))
         }
     }
+
+    public close = () => {
+      this.wsSend({
+          do: "close"
+      })
+  }
 }
 
 export class BaseHttp {

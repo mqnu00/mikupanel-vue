@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import Home from '@/views/home/index.vue'
-import TerminalTest from './views/terminal/TerminalTest.vue';
-import TerminalView from './views/terminal/TerminalView.vue';
 </script>
 
 <template>

@@ -1,6 +1,6 @@
 <template>
   <!-- <p>{{ name }}</p> -->
-      <div ref="terminalContainer" class="xterm" style="height: calc(100vh - 80px - 30px - 50px); width: 100%;"></div>
+      <div ref="terminalContainer" class="xterm" style="height: calc(100vh - 80px - 30px - 50px - 40px); width: 100%;"></div>
     <!-- <textarea></textarea> -->
   </template>
   
@@ -16,6 +16,10 @@
         name: {
             type: String,
             required: true
+        },
+        id: {
+          type: Number,
+          required: true
         }
     },
     setup(props) {
@@ -47,7 +51,7 @@
   
           // 示例：通过 WebSocket 连接到服务器
           terminalClient.value = new TerminalClient()
-          terminalClient.value.init(term, fitA)
+          terminalClient.value.init(props.id, term, fitA)
   
           term.onData((data) => {
             terminalClient.value?.sendToTerminal(data);

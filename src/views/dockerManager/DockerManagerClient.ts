@@ -8,6 +8,7 @@ export class DockerManagerClient extends BaseWebsocket {
     sourcesList: any
     containerList: any
     networkList: any
+    containerLog: any
 
     constructor() {
         super()
@@ -25,6 +26,10 @@ export class DockerManagerClient extends BaseWebsocket {
         this.containerList = containerList
     }
 
+    public setContainerLog = (containerLog: any) => {
+        this.containerLog = containerLog
+    }
+
     public setNetworkList = (networkList: any) => {
         this.networkList = networkList
     }
@@ -32,6 +37,15 @@ export class DockerManagerClient extends BaseWebsocket {
     public getSourceList = () => {
         return this.sourcesList
     }
+
+    public getImageList = () => {
+        return this.imageList
+    }
+
+    public getNetworkList = () => {
+        return this.networkList
+    }
+
 
     public init = () => {
         const dockerConfig = useComponentConfigStore().componentConfig.filter(o => {
@@ -48,133 +62,96 @@ export class DockerManagerClient extends BaseWebsocket {
 
         this.socket.onmessage = async (ev: any) => {
             if (ev.data) {
-                let info = JSON.parse(ev.data)
-                console.log(info)
-                if (info["do_return"] === 'check_docker') {
-                    if (!info.result) {
+                let info = JSON.parse(ev.data);
+                console.log(info);
+        
+                const handleResult = (result: boolean, msg: string, successMsg: string, errorMsg: string) => {
+                    if (result) {
                         ElMessage({
-                            message: `${info.msg}`,
+                            message: `${msg}`,
+                            type: 'success',
+                            showClose: true,
+                            duration: 5000
+                        });
+                    } else {
+                        ElMessage({
+                            message: `${msg}`,
                             type: 'error',
                             showClose: true,
                             duration: 5000
                         });
-                        this.socket.close()
                     }
-                } else if (info["do_return"] === 'get_docker_images') {
-                    this.imageList.value = info["images"]
-                    console.log(this.imageList)
-                } else if (info["do_return"] === 'get_docker_sources') {
-                    this.sourcesList.value = info["sources"]
-
-                    for (let i in this.sourcesList.value) {
-                        this.testSource(this.sourcesList.value[i].downloadUrl)
-                    }
-
-                } else if (info["do_return"] === 'list_all_containers') {
-                    this.containerList.value = info["containers"]
-
-                    
-
-                } else if (info["do_return"] === 'get_docker_networks') {
-                    this.networkList.value = info["data"]
-
-                    
-
-                } else if (info["do_return"] === 'test_source') {
-                    for (let i in this.sourcesList.value) {
-                        if (this.sourcesList.value[i].downloadUrl === info["sourceUrl"]) {
-                            this.sourcesList.value[i].status = info["status"]
-                            this.sourcesList.value[i].msg = info["msg"]
+                };
+        
+                switch (info["do_return"]) {
+                    case 'check_docker':
+                        if (!info.result) {
+                            ElMessage({
+                                message: `${info.msg}`,
+                                type: 'error',
+                                showClose: true,
+                                duration: 5000
+                            });
+                            this.socket.close();
                         }
-                    }
-                } else if (info["do_return"] === 'add_docker_source') {
-                    if (info["result"]) {
-                        ElMessage({
-                            message: `${info.msg}`,
-                            type: 'success',
-                            showClose: true,
-                            duration: 5000
-                        })
-                    } else {
-                        ElMessage({
-                            message: `${info.msg}`,
-                            type: 'error',
-                            showClose: true,
-                            duration: 5000
-                        })
-                    }
-                    this.getDockerSourcesList()
-                } else if (info["do_return"] === 'remove_docker_source') {
-                    if (info["result"]) {
-                        ElMessage({
-                            message: `${info.msg}`,
-                            type: 'success',
-                            showClose: true,
-                            duration: 5000
-                        })
-                    } else {
-                        ElMessage({
-                            message: `${info.msg}`,
-                            type: 'error',
-                            showClose: true,
-                            duration: 5000
-                        })
-                    }
-                    this.getDockerSourcesList()
-                }  else if (info["do_return"] === 'remove_image') {
-                    if (info["result"]) {
-                        ElMessage({
-                            message: `${info.msg}`,
-                            type: 'success',
-                            showClose: true,
-                            duration: 5000
-                        })
-                    } else {
-                        ElMessage({
-                            message: `${info.msg}`,
-                            type: 'error',
-                            showClose: true,
-                            duration: 5000
-                        })
-                    }
-                    this.getDockerImageList()
-                }  else if (info["do_return"] === 'pull_docker_image') {
-                    if (info["result"]) {
-                        ElMessage({
-                            message: `${info.msg}`,
-                            type: 'success',
-                            showClose: true,
-                            duration: 5000
-                        })
-                    } else {
-                        ElMessage({
-                            message: `${info.msg}`,
-                            type: 'error',
-                            showClose: true,
-                            duration: 5000
-                        })
-                    }
-                    this.getDockerImageList()
-                } else if (info["do_return"] === 'create_network') {
-                    if (info["result"]) {
-                        ElMessage({
-                            message: `${info.msg}`,
-                            type: 'success',
-                            showClose: true,
-                            duration: 5000
-                        })
-                    } else {
-                        ElMessage({
-                            message: `${info.msg}`,
-                            type: 'error',
-                            showClose: true,
-                            duration: 5000
-                        })
-                    }
-                    this.getDockerNetworkList()
-                } 
-            } 
-        }
+                        break;
+        
+                    case 'get_docker_images':
+                        this.imageList.value = info["images"];
+                        break;
+        
+                    case 'get_docker_sources':
+                        this.sourcesList.value = info["sources"];
+                        for (let i in this.sourcesList.value) {
+                            this.testSource(this.sourcesList.value[i].downloadUrl);
+                        }
+                        break;
+        
+                    case 'list_all_containers':
+                        this.containerList.value = info["containers"];
+                        break;
+        
+                    case 'get_docker_networks':
+                        this.networkList.value = info["data"];
+                        break;
+
+                    case 'get_container_logs':
+                        handleResult(info.result, info.msg, '操作成功', '操作失败');
+                        this.containerLog.value = info["data"]["logs"]
+                        break;
+        
+                    case 'test_source':
+                        for (let i in this.sourcesList.value) {
+                            if (this.sourcesList.value[i].downloadUrl === info["sourceUrl"]) {
+                                this.sourcesList.value[i].status = info["status"];
+                                this.sourcesList.value[i].msg = info["msg"];
+                            }
+                        }
+                        break;
+        
+                    case 'add_docker_source':
+                    case 'remove_docker_source':
+                    case 'remove_image':
+                    case 'pull_docker_image':
+                    case 'create_network':
+                    case 'delete_network':
+                    case 'create_container':
+                    case 'start_container':
+                    case 'stop_container':
+                    case '':
+                        handleResult(info.result, info.msg, '操作成功', '操作失败');
+                        this.getDockerSourcesList();
+                        this.getDockerImageList();
+                        this.getDockerNetworkList();
+                        this.getDockerContainerList();
+                        break;
+        
+                    default:
+                        console.warn(`未知的返回类型: ${info["do_return"]}`);
+                        break;
+                }
+            }
+        };
     }
 
     public removeImage = (imageId: string) => {
@@ -259,6 +236,51 @@ export class DockerManagerClient extends BaseWebsocket {
             do: "create_network",
             "data": {
                 network_config: config
+            }
+        })
+    }
+
+    public deleteNetwork(ident: string) {
+        this.wsSend({
+            do: "delete_network",
+            data: {
+                network_identifier: ident
+            }
+        })
+    }
+
+    public createContainer(config: any) {
+        this.wsSend({
+            do: "create_container",
+            data: {
+                config: config
+            }
+        })
+    }
+
+    public startContainer(containerId: string) {
+        this.wsSend({
+            do: "start_container",
+            data: {
+                container_id: containerId
+            }
+        })
+    }
+
+    public stopContainer(containerId: string) {
+        this.wsSend({
+            do: "stop_container",
+            data: {
+                container_id: containerId
+            }
+        })
+    }
+
+    public getContainerLog(containerId: string) {
+        this.wsSend({
+            do: "get_container_logs",
+            data: {
+                container_id: containerId
             }
         })
     }

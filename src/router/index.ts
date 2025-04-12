@@ -32,16 +32,7 @@ import { generateDynamicRoutes } from './dynamicRoutes';
 
 export const routes: RouteRecordRaw[] =  [
 
-    {
-      path: '/test',
-      name: 'Test',
-      component: () => import('../../dist/plugins/DockerManager/DockerManager.js')
-    },
-    {
-      path: '/terminal',
-      name: 'Terminal',
-      component: () => import('@/views/terminal/TerminalView.vue')
-    },
+   
   //   {
   //     path: '/',
   //     name: 'Home',

@@ -1,7 +1,7 @@
 <template>
     <n-layout v-if="dataLoaded" style="width: 100%; height: 100%; position: relative;">
         <!-- 固定在顶部的 n-layout-header -->
-        <n-layout-header class="header" style="position: absolute; top: 0; left: 0; right: 0; height: 60px;">
+        <n-layout-header class="file-header" style="position: absolute; top: 0; left: 0; right: 0; height: 60px;">
             <n-space>
                 <el-button @click="dirBack" circle>
                     <i-ep-Back />
@@ -206,7 +206,7 @@ export default defineComponent({
 });
 </script>
 
-<style>
+<style scoped>
 .clickable-text {
     color: #409eff;
     /* 蓝色文本 */
@@ -236,13 +236,11 @@ export default defineComponent({
     /* 悬停时显示箭头 */
 }
 
-.header {
+.file-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
-    background-color: #f5f5f5;
-    border-bottom: 1px solid #eaeaea;
 }
 
 .bread {

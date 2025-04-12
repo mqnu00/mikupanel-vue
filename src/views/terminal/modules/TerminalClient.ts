@@ -22,21 +22,19 @@ export class SSHInfo {
 
 export class TerminalClient {
     public socket: WebSocket
-    private sshInfo: SSHInfo
     private uid: string
     private messageQueue: any[] = []
     public term: Terminal | null = null
     public fitAtton: FitAddon | null = null
+    public sshInfoList: any
 
     constructor() {
         this.socket = new WebSocket(import.meta.env.VITE_API_BASE_WS_URL)
-        this.sshInfo = new SSHInfo(
-            '192.168.177.129',
-            22,
-            'lzh',
-            '112233'
-        )
         this.uid = ''
+    }
+
+    public setSSHInfoList(sshInfoList: any) {
+        this.sshInfoList = sshInfoList
     }
 
     private wsSend = (msg: any) => {
@@ -49,7 +47,7 @@ export class TerminalClient {
         }
     }
 
-    public init(term: Terminal, fitAtton: FitAddon): void {
+    public init(id: number, term: Terminal, fitAtton: FitAddon): void {
 
         this.term = term
         this.fitAtton = fitAtton
@@ -63,7 +61,7 @@ export class TerminalClient {
                     component: 'terminal'
                 })
             );
-            this.addTerminal()
+            this.addTerminal(id)
         }
         this.socket.onmessage = (ev: any) => {
             if (ev.data) {
@@ -92,7 +90,7 @@ export class TerminalClient {
                     // 如果删除的是当前选中的终端，需要激活其他终端
                     // 激活第一个 terminal
                     // 如果没有终端，清空选中的 tab
-                }
+                } 
             }
         }
         this.socket.onerror = (error: any) => {
@@ -103,16 +101,13 @@ export class TerminalClient {
         }
     }
 
-    private addTerminal = () => {
+    private addTerminal = (id: number) => {
         console.log("create terminal")
         this.wsSend(
             JSON.stringify({
                 do: "create",
                 data: {
-                  host: this.sshInfo.host,
-                  port: this.sshInfo.port,
-                  username: this.sshInfo.username,
-                  password: this.sshInfo.password
+                  sshInfoId: id
                 }
               })
         )
@@ -161,4 +156,12 @@ export class TerminalClient {
               })
         )
     }
+
+    public getSSHInfoById = (id: number) => {
+        this.wsSend({
+            do: "getSSHById",
+            id: id
+        })
+    }
+    
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="tabs-container">
-    <el-tabs v-model="activeTab" >
-    <el-tab-pane name="container" label="容器">
+    <el-tabs v-model="activeTab" class="fixed-tabs">
+    <el-tab-pane name="container" label="容器" style="padding: 1px; position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: auto;">
         <DockerContainer :docker-manager-client="dockerManagerClient"></DockerContainer>
     </el-tab-pane>
     <el-tab-pane name="image" label="镜像">
@@ -53,7 +53,21 @@ export default defineComponent({
 
 <style>
 .tabs-container {
-  width: 100%;
+  position: relative;
+  height: 100%;
+}
+
+.el-tabs {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.el-tabs__content {
+  flex: 1;
+  overflow: auto;
 }
 
 

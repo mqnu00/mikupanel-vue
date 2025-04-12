@@ -8,26 +8,27 @@ import {
     ChevronForwardOutline as ExpandIcon,
     ChevronBackOutline as CollapseIcon,
     HomeOutline as HomeIcon,
-  } from "@vicons/ionicons5";
+} from "@vicons/ionicons5";
 import { generateDynamicRoutes } from "@/router/dynamicRoutes";
 import { useComponentConfigStore } from "@/store/useComponentConfigStore";
+import router from "@/router";
 
 function renderIcon(icon: Component) {
     return () => h(NIcon, null, { default: () => h(icon) });
-  }
+}
 
 export class LayoutClient extends BaseWebsocket {
 
     public menuOptions: any
 
-    constructor () {
-        
+    constructor() {
+
         super()
 
     }
 
-    public init(menuOptions: any) {
-      const componentConfigStore = useComponentConfigStore()
+    public init(menuOptions: any, activeKey: any) {
+        const componentConfigStore = useComponentConfigStore()
         this.menuOptions = menuOptions
         this.socket.onopen = () => {
             this.wsSend({
@@ -42,60 +43,42 @@ export class LayoutClient extends BaseWebsocket {
                 console.log(info)
                 const routerItems = []
                 this.menuOptions = [
-                  {
-                    label: () =>
-                      h(
-                        RouterLink,
-                        {
-                          to: {
-                            path: "/test"
-                          }
-                        },
-                        { default: () => "test" }
-                      ),
-                    key: "test",
-                  },
-                  {
-                    label: () =>
-                      h(
-                        RouterLink,
-                        {
-                          to: {
-                            path: "/terminal"
-                          }
-                        },
-                        { default: () => "terminal" }
-                      ),
-                    key: "terminal",
-                  },
+
                 ]
+                const now_router = router.currentRoute.value.path
                 for (const i in info) {
                     console.log(i)
+                    if (!("menu" in info[i])) continue
                     this.menuOptions.push({
                         label: () =>
-                                  h(
-                                    RouterLink,
-                                    {
-                                      to: {
+                            h(
+                                RouterLink,
+                                {
+                                    to: {
                                         path: info[i].menu.path
-                                      }
-                                    },
-                                    { default: () => info[i].menu.label }
-                                  ),
-                                key: info[i].menu.key,
-                                // icon: renderIcon(BookIcon)
+                                    }
+                                },
+                                { default: () => info[i].menu.label }
+                            ),
+                        key: info[i].menu.key,
+                        // icon: renderIcon(BookIcon)
                     })
                     routerItems.push(info[i].router)
                 }
                 generateDynamicRoutes(routerItems)
                 componentConfigStore.setComponentConfig(info)
+                const selected = info.filter(item => {
+                    if (!("menu" in item)) return false;
+                    return item.menu.path === now_router
+                })[0]
+                activeKey.value = selected.menu.key
             }
         }
     }
 
     public close = () => {
-      this.wsSend({
-        do: "close"
-      })
+        this.wsSend({
+            do: "close"
+        })
     }
 }

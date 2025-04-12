@@ -53,18 +53,22 @@ import {
 import { NIcon } from "naive-ui";
 import { defineComponent, h, ref } from "vue";
 import {LayoutClient} from "./LayoutClient"
+import router from "@/router/index.js";
 
 function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) });
 }
 
 export default defineComponent({
+  methods: {
+    
+  },
   setup() {
     const activeKey = ref<string | null>(null);
     const menuOptions = ref<MenuOption[]>([])
     const layoutClient = ref<LayoutClient>(new LayoutClient())
 
-    layoutClient.value.init(menuOptions)
+    layoutClient.value.init(menuOptions, activeKey)
 
     function goHome() {
       console.log("返回首页");
@@ -72,7 +76,13 @@ export default defineComponent({
       // this.$router.push("/");
     }
 
+    onMounted(() => {
+    })
+
     onUnmounted(() => {
+
+      
+
       layoutClient.value.close()
     })
 

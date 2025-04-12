@@ -16,7 +16,7 @@
                 <el-table-column prop="created" label="创建日期" :formatter="formatDockerTime" />
                 <el-table-column label="操作">
                     <template #default="scope">
-                        <el-button type="text" @click="">删除</el-button>
+                        <el-button type="text" @click="deleteNetwork(scope.row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -64,6 +64,9 @@ export default defineComponent({
         },
         createNetwork(){
             this.createNetworkVisible = true
+        },
+        deleteNetwork(row: any){
+            this.dockerManagerClient?.deleteNetwork(row.name)
         }
     },
     setup(props) {
